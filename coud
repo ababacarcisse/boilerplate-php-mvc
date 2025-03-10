@@ -1,0 +1,107 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Outil CLI pour la génération de composants MVC
+ * Commande : php coud add m NomDuModel
+ */
+
+// Vérifie si on est en mode CLI
+if (PHP_SAPI !== 'cli') {
+    exit('Cet outil ne peut être exécuté qu\'en ligne de commande');
+}
+
+// Configuration des chemins
+$projectRoot = dirname(__DIR__); // Adaptez selon votre structure
+$modelsDir = $projectRoot . './app/Models/'; // Chemin vers le dossier Models
+
+// Vérifie si le dossier Models existe, sinon le crée
+if (!is_dir($modelsDir)) {
+    if (!mkdir($modelsDir, 0755, true)) { // Crée le dossier avec les permissions appropriées
+        echo "Erreur : Impossible de créer le dossier Models.\n";
+        exit(1);
+    }
+}
+
+// Gestion des arguments corrigée
+$args = $argv ?? [];
+if (count($args) < 4 || $args[1] !== 'add' || $args[2] !== 'm') {
+    echo "Usage : php coud add m <NomDuModel>\n";
+    exit(1);
+}
+
+// Récupération du nom du modèle corrigée
+$modelName = ucfirst($args[3]); // Index 3 maintenant
+$modelFile = $modelsDir . $modelName . '.php'; // Chemin complet vers le fichier du modèle
+
+// Vérifie si le fichier existe déjà
+if (file_exists($modelFile)) {
+    echo "Erreur : Le modèle $modelName existe déjà!\n";
+    exit(1);
+}
+
+// Contenu du modèle
+$content = <<<PHP
+<?php
+
+namespace App\Models;
+
+use Core\Model;
+
+/**
+ * Généré automatiquement par Coud le @date
+ * Modèle : $modelName
+ */
+class $modelName extends Model
+{
+    protected \$table = '@@TABLE_NAME@@'; // Spécifiez le nom de la table
+
+    /**
+     * Exemple de méthode de récupération
+     */
+    public function findBy@@FIELD@@(\$value)
+    {
+        return \$this->query("SELECT * FROM {\$this->table} WHERE @@FIELD@@ = ?", [\$value]);
+    }
+
+    /**
+     * Exemple de méthode de création
+     */
+    public function create(\$data)
+    {
+        return \$this->query(
+            "INSERT INTO {\$this->table} (@@FIELDS@@) VALUES (@@VALUES@@)",
+            \$data
+        );
+    }
+
+    // Ajoutez ici vos méthodes personnalisées...
+}
+
+PHP;
+
+// Remplace les placeholders
+$content = str_replace(
+    ['@date', '@@TABLE_NAME@@', '@@FIELD@@', '@@FIELDS@@', '@@VALUES@@'],
+    [date('Y-m-d H:i'), 'nom_de_la_table', 'champ', 'champ1, champ2', '?, ?'],
+    $content
+);
+
+// Écrit le fichier
+if (file_put_contents($modelFile, $content)) {
+    echo "Modèle $modelName généré avec succès dans : $modelFile\n";
+} else {
+    echo "Erreur lors de la création du modèle!\n";
+    exit(1);
+}
+
+// Exemple d'extension pour les contrôleurs
+if ($args[2] === 'c') {
+    // Logique de génération de contrôleur, vou pouvez ajouter des méthodes personnalisées
+}
+
+// Exemple d'extension pour les vues
+if ($args[2] === 'v') {
+    // Logique de génération de vue
+}
+
+exit(0); 
