@@ -11,97 +11,377 @@ if (PHP_SAPI !== 'cli') {
 }
 
 // Configuration des chemins
-$projectRoot = dirname(__DIR__); // Adaptez selon votre structure
-$modelsDir = $projectRoot . './app/Models/'; // Chemin vers le dossier Models
+$projectRoot = __DIR__;
 
-// Vérifie si le dossier Models existe, sinon le crée
-if (!is_dir($modelsDir)) {
-    if (!mkdir($modelsDir, 0755, true)) { // Crée le dossier avec les permissions appropriées
-        echo "Erreur : Impossible de créer le dossier Models.\n";
+// Analyse de la commande
+$command = $argv[1] ?? 'help';
+$type = $argv[2] ?? '';
+$name = $argv[3] ?? '';
+
+// Traitement des commandes
+switch ($command) {
+    case 'add':
+        handleAddCommand($type, $name, $projectRoot);
+        break;
+    case 'create':
+        if ($type === 'project' && !empty($name)) {
+            createProject($name);
+        } else {
+            showHelp();
+        }
+        break;
+    case 'help':
+    default:
+        showHelp();
+        break;
+}
+
+// Fonction pour gérer la commande 'add'
+function handleAddCommand($type, $name, $projectRoot) {
+    if (empty($type) || empty($name)) {
+        echo "Erreur: Type et nom requis.\n";
+        showHelp();
+        exit(1);
+    }
+
+    switch ($type) {
+        case 'm':
+        case 'model':
+            createModel($name, $projectRoot);
+            break;
+        case 'c':
+        case 'controller':
+            createController($name, $projectRoot);
+            break;
+        case 'v':
+        case 'view':
+            createView($name, $projectRoot);
+            break;
+        case 'val':
+        case 'validation':
+            createValidation($name, $projectRoot);
+            break;
+        default:
+            echo "Type non reconnu: $type\n";
+            showHelp();
+            exit(1);
+    }
+}
+
+// Fonction pour créer un modèle
+function createModel($name, $projectRoot) {
+    $name = ucfirst($name);
+    $modelsDir = "$projectRoot/app/Models/";
+    
+    if (!is_dir($modelsDir)) {
+        if (!mkdir($modelsDir, 0755, true)) {
+            echo "Erreur: Impossible de créer le dossier Models.\n";
+            exit(1);
+        }
+    }
+    
+    $modelFile = $modelsDir . $name . '.php';
+    
+    if (file_exists($modelFile)) {
+        echo "Erreur: Le modèle $name existe déjà!\n";
+        exit(1);
+    }
+    
+    $content = generateModelContent($name);
+    
+    if (file_put_contents($modelFile, $content)) {
+        echo "Modèle $name généré avec succès dans: $modelFile\n";
+    } else {
+        echo "Erreur lors de la création du modèle!\n";
         exit(1);
     }
 }
 
-// Gestion des arguments corrigée
-$args = $argv ?? [];
-if (count($args) < 4 || $args[1] !== 'add' || $args[2] !== 'm') {
-    echo "Usage : php coud add m <NomDuModel>\n";
-    exit(1);
-}
-
-// Récupération du nom du modèle corrigée
-$modelName = ucfirst($args[3]); // Index 3 maintenant
-$modelFile = $modelsDir . $modelName . '.php'; // Chemin complet vers le fichier du modèle
-
-// Vérifie si le fichier existe déjà
-if (file_exists($modelFile)) {
-    echo "Erreur : Le modèle $modelName existe déjà!\n";
-    exit(1);
-}
-
-// Contenu du modèle
-$content = <<<PHP
+// Fonction pour générer le contenu d'un modèle
+function generateModelContent($name) {
+    $tableName = strtolower($name) . 's';
+    
+    return <<<PHP
 <?php
 
-namespace App\Models;
+namespace App\Models;votre-compte
 
 use Core\Model;
 
 /**
- * Généré automatiquement par Coud le @date
- * Modèle : $modelName
+ * Généré automatiquement par Coud le " . date('Y-m-d H:i') . "
+ * Modèle: $name
  */
-class $modelName extends Model
+class $name extends Model
 {
-    protected \$table = '@@TABLE_NAME@@'; // Spécifiez le nom de la table
+    protected \$table = '$tableName';
+    protected \$primaryKey = 'id';
+    protected \$fillable = [
+        // Liste des champs autorisés pour l'assignement de masse
+        'name',
+        'email',
+        // Ajoutez vos champs ici
+    ];
 
     /**
-     * Exemple de méthode de récupération
+     * Exemple de méthode personnalisée
      */
-    public function findBy@@FIELD@@(\$value)
+    public function findByName(\$name)
     {
-        return \$this->query("SELECT * FROM {\$this->table} WHERE @@FIELD@@ = ?", [\$value]);
+        return \$this->query("SELECT * FROM {\$this->table} WHERE name = ?", [\$name])->fetchAll();
     }
-
-    /**
-     * Exemple de méthode de création
-     */
-    public function create(\$data)
-    {
-        return \$this->query(
-            "INSERT INTO {\$this->table} (@@FIELDS@@) VALUES (@@VALUES@@)",
-            \$data
-        );
-    }
-
-    // Ajoutez ici vos méthodes personnalisées...
 }
-
 PHP;
-
-// Remplace les placeholders
-$content = str_replace(
-    ['@date', '@@TABLE_NAME@@', '@@FIELD@@', '@@FIELDS@@', '@@VALUES@@'],
-    [date('Y-m-d H:i'), 'nom_de_la_table', 'champ', 'champ1, champ2', '?, ?'],
-    $content
-);
-
-// Écrit le fichier
-if (file_put_contents($modelFile, $content)) {
-    echo "Modèle $modelName généré avec succès dans : $modelFile\n";
-} else {
-    echo "Erreur lors de la création du modèle!\n";
-    exit(1);
 }
 
-// Exemple d'extension pour les contrôleurs
-if ($args[2] === 'c') {
-    // Logique de génération de contrôleur, vou pouvez ajouter des méthodes personnalisées
+// Fonction pour créer un contrôleur
+function createController($name, $projectRoot) {
+    $name = ucfirst($name) . 'Controller';
+    $controllersDir = "$projectRoot/app/Controllers/";
+    
+    if (!is_dir($controllersDir)) {
+        if (!mkdir($controllersDir, 0755, true)) {
+            echo "Erreur: Impossible de créer le dossier Controllers.\n";
+            exit(1);
+        }
+    }
+    
+    $controllerFile = $controllersDir . $name . '.php';
+    
+    if (file_exists($controllerFile)) {
+        echo "Erreur: Le contrôleur $name existe déjà!\n";
+        exit(1);
+    }
+    
+    $content = generateControllerContent($name);
+    
+    if (file_put_contents($controllerFile, $content)) {
+        echo "Contrôleur $name généré avec succès dans: $controllerFile\n";
+    } else {
+        echo "Erreur lors de la création du contrôleur!\n";
+        exit(1);
+    }
 }
 
-// Exemple d'extension pour les vues
-if ($args[2] === 'v') {
-    // Logique de génération de vue
+// Fonction pour générer le contenu d'un contrôleur
+function generateControllerContent($name) {
+    $baseControllerName = str_replace('Controller', '', $name);
+    $viewFolder = strtolower($baseControllerName);
+    
+    return <<<PHP
+<?php
+
+namespace App\Controllers;
+
+use Core\Controller;
+
+/**
+ * Généré automatiquement par Coud le " . date('Y-m-d H:i') . "
+ * Contrôleur: $name
+ */
+class $name extends Controller
+{
+    /**
+     * Page d'accueil
+     */
+    public function index()
+    {
+        \$this->render('$viewFolder/index');
+    }
+
+    /**
+     * Afficher un élément
+     */
+    public function show(\$id)
+    {
+        // Logique pour récupérer et afficher un élément
+        \$this->render('$viewFolder/show', ['id' => \$id]);
+    }
+
+    /**
+     * Afficher le formulaire de création
+     */
+    public function create()
+    {
+        \$this->render('$viewFolder/create');
+    }
+
+    /**
+     * Traiter le formulaire de création
+     */
+    public function store()
+    {
+        // Logique pour traiter les données du formulaire et créer un nouvel élément
+        // Redirection vers l'index après création
+        header('Location: /$viewFolder');
+    }
+}
+PHP;
+}
+
+// Fonction pour créer une vue
+function createView($name, $projectRoot) {
+    $viewsDir = "$projectRoot/app/Views/" . strtolower($name) . '/';
+    
+    if (!is_dir($viewsDir)) {
+        if (!mkdir($viewsDir, 0755, true)) {
+            echo "Erreur: Impossible de créer le dossier de vues.\n";
+            exit(1);
+        }
+    }
+    
+    $viewFile = $viewsDir . 'index.php';
+    
+    if (file_exists($viewFile)) {
+        echo "Erreur: La vue index pour $name existe déjà!\n";
+        exit(1);
+    }
+    
+    $content = generateViewContent($name);
+    
+    if (file_put_contents($viewFile, $content)) {
+        echo "Vue pour $name générée avec succès dans: $viewFile\n";
+    } else {
+        echo "Erreur lors de la création de la vue!\n";
+        exit(1);
+    }
+}
+
+// Fonction pour générer le contenu d'une vue
+function generateViewContent($name) {
+    $title = ucfirst($name);
+    
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$title</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Liste des $name</h1>
+        
+        <div class="content">
+            <!-- Contenu de la vue -->
+            <p>Cette vue a été générée automatiquement avec Coud.</p>
+        </div>
+        
+        <footer>
+            <p>&copy; <?= date('Y') ?> PHP MVC Boilerplate</p>
+        </footer>
+    </div>
+    
+    <script src="/js/app.js"></script>
+</body>
+</html>
+HTML;
+}
+
+// Fonction pour créer un nouveau projet
+function createProject($projectName) {
+    echo "Création d'un nouveau projet: $projectName...\n";
+    
+    // Créer le dossier du projet
+    if (!mkdir($projectName, 0755)) {
+        echo "Erreur: Impossible de créer le dossier du projet.\n";
+        exit(1);
+    }
+    
+    // Cloner le boilerplate depuis GitHub (à remplacer par votre propre repo)
+    $command = "git clone https://github.com/votre-compte/coud-boilerplate.git $projectName";
+    echo "Exécution de: $command\n";
+    
+    exec($command, $output, $returnCode);
+    
+    if ($returnCode !== 0) {
+        echo "Erreur lors du clonage du repository.\n";
+        exit(1);
+    }
+    
+    echo "Projet créé avec succès!\n";
+    echo "Pour commencer, accédez au dossier du projet:\n";
+    echo "cd $projectName\n";
+}
+
+// Fonction pour créer une validation
+function createValidation($name, $projectRoot) {
+    $name = ucfirst($name) . 'Validator';
+    $validationsDir = "$projectRoot/app/validations/";
+    
+    if (!is_dir($validationsDir)) {
+        if (!mkdir($validationsDir, 0755, true)) {
+            echo "Erreur: Impossible de créer le dossier validations.\n";
+            exit(1);
+        }
+    }
+    
+    $validationFile = $validationsDir . $name . '.php';
+    
+    if (file_exists($validationFile)) {
+        echo "Erreur: La validation $name existe déjà!\n";
+        exit(1);
+    }
+    
+    $content = generateValidationContent($name);
+    
+    if (file_put_contents($validationFile, $content)) {
+        echo "Validation $name générée avec succès dans: $validationFile\n";
+    } else {
+        echo "Erreur lors de la création de la validation!\n";
+        exit(1);
+    }
+}
+
+// Fonction pour générer le contenu d'une validation
+function generateValidationContent($name) {
+    return <<<PHP
+<?php
+
+namespace App\Validations;
+
+use Core\Validator;
+
+/**
+ * Généré automatiquement par Coud le " . date('Y-m-d H:i') . "
+ * Validation: $name
+ */
+class $name extends Validator
+{
+    public function validate(array \$data) {
+        // Exemple :
+        // if (empty(\$data['champ'])) {
+        //     return false;
+        // }
+        // return true;
+    }
+}
+PHP;
+}
+
+// Fonction pour afficher l'aide
+function showHelp() {
+    echo <<<HELP
+Utilisation de Coud CLI:
+
+  php coud add <type> <nom>       Génère un nouveau composant
+    Types disponibles:
+      m, model       Génère un modèle
+      c, controller  Génère un contrôleur
+      v, view        Génère une vue
+  
+  php coud create project <nom>   Crée un nouveau projet
+
+  php coud help                   Affiche cette aide
+
+Exemples:
+  php coud add model User         Génère un modèle User
+  php coud add controller Home    Génère un contrôleur HomeController
+  php coud add view admin         Génère une vue dans app/Views/admin/
+
+HELP;
 }
 
 exit(0); 
