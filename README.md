@@ -110,6 +110,26 @@ Cette commande génère un fichier de validation avec une structure de base dans
 **Exemple :**
 - `php coud add validation User` - Génère un fichier UserValidator.php dans app/validations/
 
+## Utilisation de l'API RESTful
+
+L'application inclut une API RESTful pour gérer les ressources telles que les utilisateurs. Voici comment utiliser l'API :
+
+### Points de terminaison disponibles
+
+- **GET /api/users** : Récupère la liste de tous les utilisateurs.
+- **GET /api/users/{id}** : Récupère un utilisateur spécifique par ID.
+- **POST /api/users** : Crée un nouvel utilisateur.
+- **PUT /api/users/{id}** : Met à jour un utilisateur existant par ID.
+- **DELETE /api/users/{id}** : Supprime un utilisateur par ID.
+
+### Sécurité
+
+L'API utilise un middleware d'authentification pour sécuriser les requêtes. Assurez-vous d'inclure un en-tête d'autorisation HTTP avec un token valide pour accéder aux points de terminaison protégés.
+
+### Extension de l'API
+
+Pour ajouter de nouvelles ressources ou fonctionnalités, créez de nouveaux contrôleurs dans `app/api/Controllers/` et définissez les routes correspondantes dans `app/api/Routes/api.php`. Utilisez les middlewares pour ajouter des couches de sécurité ou de traitement supplémentaires.
+
 ## Contribuer
 
 Les contributions sont les bienvenues ! Veuillez soumettre une demande de tirage (pull request) pour toute amélioration ou correction.

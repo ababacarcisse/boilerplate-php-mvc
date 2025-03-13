@@ -7,7 +7,15 @@ abstract class Controller
     // Charge une vue et passe des données à celle-ci
     protected function render($view, $data = [])
     {
+        // Utilisez __DIR__ pour un chemin absolu plutôt qu'un chemin relatif
+        $viewPath = dirname(__DIR__) . "/app/Views/$view.php";
+        
+        // Vérifiez si le fichier existe avant de l'inclure
+        if (!file_exists($viewPath)) {
+            die("Vue '$view' introuvable: $viewPath");
+        }
+        
         extract($data); // Extrait les données pour les rendre accessibles dans la vue
-        require "../app/Views/$view.php"; // Inclut le fichier de vue
+        require $viewPath; // Inclut le fichier de vue
     }
 }

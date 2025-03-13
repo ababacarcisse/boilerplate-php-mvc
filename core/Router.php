@@ -25,23 +25,40 @@ class Router
         }
     }
 
-    // Gère la correspondance entre l'URL et les contrôleurs/actions
     public function dispatch($url)
     {
+        // Supprimer le sous-répertoire du chemin si présent
+        $base_path = '/coud_bouletplate';
+        if (strpos($url, $base_path) === 0) {
+            $url = substr($url, strlen($base_path));
+        }
+        
+        // S'assurer que l'URL commence par '/'
+        if ($url !== '/' && empty($url)) {
+            $url = '/';
+        }
+        
         // Normaliser l'URL
         $url = $this->normalizeUrl($url);
         
         // Chercher une correspondance de route
         if ($this->match($url)) {
+            // Si le paramètre est une closure, on l'exécute directement
+            if (is_callable($this->params)) {
+                call_user_func($this->params);
+                return;
+            }
+            
+            // Sinon, on attend un tableau avec 'controller' et 'action'
             $controller = $this->params['controller'];
             $action = $this->params['action'] ?? 'index';
-
+    
             // Instancie le contrôleur
             $controller = "App\\Controllers\\$controller";
             
             if (class_exists($controller)) {
                 $controller_object = new $controller();
-
+    
                 // Vérifie si l'action est callable
                 if (is_callable([$controller_object, $action])) {
                     unset($this->params['controller'], $this->params['action']);
@@ -58,8 +75,7 @@ class Router
             echo "Page non trouvée";
         }
     }
-
-    // Vérifie si l'URL correspond à une route définie
+        // Vérifie si l'URL correspond à une route définie
     protected function match($url)
     {
         foreach ($this->routes as $route => $params) {
