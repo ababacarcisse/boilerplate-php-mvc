@@ -10,12 +10,15 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "phpmailer/phpmailer": "^6.5"
+        "php": ">=8.0.30",
+        "phpmailer/phpmailer": "^6.5",
+        "firebase/php-jwt": "^6.11"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "App\\Api\\": "app/api/",
+            "App\\Lib\\": "app/Lib/",
             "Core\\": "core/"
         }
     },

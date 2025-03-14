@@ -17,6 +17,10 @@ class ComposerStaticInit2185d2f99bcd56787481d9357a5972d3
             'PhpParser\\' => 10,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
+        'F' => 
+        array (
+            'Firebase\\JWT\\' => 13,
+        ),
         'D' => 
         array (
             'Doctrine\\Instantiator\\' => 22,
@@ -28,6 +32,8 @@ class ComposerStaticInit2185d2f99bcd56787481d9357a5972d3
         ),
         'A' => 
         array (
+            'App\\Lib\\' => 8,
+            'App\\Api\\' => 8,
             'App\\' => 4,
         ),
     );
@@ -41,6 +47,10 @@ class ComposerStaticInit2185d2f99bcd56787481d9357a5972d3
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
+        'Firebase\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
         'Doctrine\\Instantiator\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator',
@@ -52,6 +62,14 @@ class ComposerStaticInit2185d2f99bcd56787481d9357a5972d3
         'Core\\' => 
         array (
             0 => __DIR__ . '/../..' . '/core',
+        ),
+        'App\\Lib\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/app/Lib',
+        ),
+        'App\\Api\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/app/api',
         ),
         'App\\' => 
         array (

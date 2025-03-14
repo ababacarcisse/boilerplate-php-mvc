@@ -1,0 +1,30 @@
+ 
+ // Test d'inscription d'un nouvel utilisateur
+// POST  http://localhost/coud_bouletplate/api/auth/register
+// Content-Type: application/json
+//
+// {
+//     "matricule": "MAT2025001",
+//     "nom": "Diop",
+//     "prenom": "Alioune",
+//     "date_naissance": "2002-05-14",
+//     "email": "ababacarcisse18@gmail.com",
+//     "password": "motdepasse123"
+// }
+
+POST  http://localhost/coud_bouletplate/api/auth/login
+Content-Type: application/json
+
+{
+    "matricule": "MAT2025001",
+    "password": "motdepasse123"
+}
+
+
+
+
+
+
+
+
+

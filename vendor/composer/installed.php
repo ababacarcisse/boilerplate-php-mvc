@@ -3,7 +3,7 @@
         'name' => 'ababacarcisse/coud-bouletplate',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'a4ac97325586c761a569004bae08ff450592e208',
+        'reference' => '0f072ce74d400b7db99d9d8570c8ed06007539c5',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'ababacarcisse/coud-bouletplate' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'a4ac97325586c761a569004bae08ff450592e208',
+            'reference' => '0f072ce74d400b7db99d9d8570c8ed06007539c5',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -27,6 +27,15 @@
             'install_path' => __DIR__ . '/../doctrine/instantiator',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'firebase/php-jwt' => array(
+            'pretty_version' => 'v6.11.0',
+            'version' => '6.11.0.0',
+            'reference' => '8f718f4dfc9c5d5f0c994cdfd103921b43592712',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../firebase/php-jwt',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'myclabs/deep-copy' => array(
             'pretty_version' => '1.13.0',

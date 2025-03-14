@@ -2,15 +2,41 @@
 
 namespace App\Api\Controllers;
 
+use App\Api\Services\UserService;
+
 class UserController {
+    protected $userService;
+
+    public function __construct() {
+        $this->userService = new UserService();
+    }
+
     public function index() {
-        // Logique pour obtenir tous les utilisateurs
-        echo "Liste des utilisateurs";
+        $page = $_GET['page'] ?? 1;
+        $limit = $_GET['limit'] ?? 20;
+        
+        try {
+            $users = $this->userService->getAllUsers($page, $limit);
+            echo json_encode(['success' => true, 'data' => $users]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function show($id) {
-        // Logique pour obtenir un utilisateur par ID
-        echo "Afficher l'utilisateur avec ID: $id";
+        try {
+            $user = $this->userService->getUserById($id);
+            if ($user) {
+                echo json_encode(['success' => true, 'data' => $user]);
+            } else {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Utilisateur non trouvé']);
+            }
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function store() {
