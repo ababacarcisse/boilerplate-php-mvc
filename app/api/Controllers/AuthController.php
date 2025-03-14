@@ -188,11 +188,11 @@ class AuthController
     }
     
     /**
-     * Initie le processus de réinitialisation de mot de passe
+     * Traite une demande de réinitialisation de mot de passe
      */
     public function forgotPassword()
     {
-        // Vérifier la méthode
+        // Vérifier que la méthode de requête est POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
@@ -202,19 +202,113 @@ class AuthController
         // Récupérer les données
         $data = json_decode(file_get_contents('php://input'), true);
         
+        // Vérifier l'email
         if (!isset($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Adresse email valide requise']);
+            echo json_encode(['success' => false, 'message' => 'Adresse email invalide']);
             return;
         }
         
-        // Initier la réinitialisation du mot de passe
-        $result = $this->authService->initiatePasswordReset($data['email']);
+        // Vérifier le matricule
+        if (!isset($data['matricule']) || empty($data['matricule'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Matricule invalide']);
+            return;
+        }
         
-        // Toujours retourner succès pour ne pas révéler si l'email existe
-        http_response_code(200);
-        header('Content-Type: application/json');
-        echo json_encode($result);
+        // Créer une instance de ErrorHandler pour la journalisation
+        $errorHandler = new \App\logs\ErrorHandler();
+        
+        try {
+            // Journaliser la demande
+            $errorHandler->logEmailError(
+                "Demande de réinitialisation reçue",
+                "Email: {$data['email']}, Matricule: {$data['matricule']}"
+            );
+            
+            // Vérifier si l'utilisateur existe
+            $user = \App\Api\Models\User::findByEmail($data['email']);
+            
+            if ($user && $user['matricule'] === $data['matricule']) {
+                // Journaliser la correspondance trouvée
+                $errorHandler->logEmailError(
+                    "Utilisateur trouvé pour la réinitialisation",
+                    "ID: {$user['id']}, Email: {$user['email']}, Matricule: {$user['matricule']}"
+                );
+                
+                try {
+                    // Initialiser le service d'email
+                    $emailService = new \App\Lib\EmailService();
+                    
+                    // Générer un token de réinitialisation
+                    $resetResult = $this->authService->initiatePasswordReset($data['email'], $data['matricule']);
+                    
+                    // Journaliser les informations du token
+                    if (isset($resetResult['token_info'])) {
+                        $errorHandler->logEmailError(
+                            "Token de réinitialisation généré",
+                            "Selector: {$resetResult['token_info']['selector']}, " .
+                            "URL: {$resetResult['token_info']['reset_url']}, " .
+                            "Expiration: {$resetResult['token_info']['expires_at']}"
+                        );
+                        
+                        // Envoyer l'email directement ici
+                        $resetUrl = $resetResult['token_info']['reset_url'];
+                        
+                        try {
+                            $emailSent = $emailService->sendPasswordResetEmail($user, $resetUrl);
+                            
+                            if (!$emailSent) {
+                                $errorHandler->logEmailError(
+                                    "Échec de l'envoi d'email de réinitialisation",
+                                    "Email: {$data['email']}, Erreur: " . ($emailService->getLastError() ?? 'Inconnue')
+                                );
+                            } else {
+                                $errorHandler->logEmailError(
+                                    "Email de réinitialisation envoyé avec succès",
+                                    "Email: {$data['email']}, URL: $resetUrl"
+                                );
+                            }
+                        } catch (\Exception $e) {
+                            $errorHandler->logEmailError(
+                                "Exception lors de l'envoi d'email",
+                                "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
+                            );
+                        }
+                    } else {
+                        $errorHandler->logEmailError(
+                            "Échec de génération du token de réinitialisation",
+                            "Réponse: " . json_encode($resetResult)
+                        );
+                    }
+                } catch (\Exception $e) {
+                    $errorHandler->logEmailError(
+                        "Exception lors de l'initialisation du service d'email",
+                        "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
+                    );
+                }
+            } else {
+                $errorHandler->logEmailError(
+                    "Utilisateur non trouvé pour la réinitialisation",
+                    "Email: {$data['email']}, Matricule: {$data['matricule']}"
+                );
+            }
+            
+            // Par mesure de sécurité, toujours retourner un succès
+            echo json_encode([
+                'success' => true,
+                'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+            ]);
+            
+        } catch (\Exception $e) {
+            $errorHandler->logEmailError(
+                "Erreur lors de la demande de réinitialisation",
+                "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
+            );
+            
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Erreur serveur lors de la demande de réinitialisation']);
+        }
     }
     
     /**

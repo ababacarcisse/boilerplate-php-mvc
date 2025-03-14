@@ -12,12 +12,12 @@
 //     "password": "motdepasse123"
 // }
 
-POST  http://localhost/coud_bouletplate/api/auth/login
+POST  http://localhost/coud_bouletplate/api/auth/forgot-password
 Content-Type: application/json
 
 {
     "matricule": "MAT2025001",
-    "password": "motdepasse123"
+    "email": "ababacarcisse18@gmail.com"
 }
 
 

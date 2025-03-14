@@ -17,7 +17,14 @@ abstract class Model
     {
         if (self::$db === null) {
             try {
-                $config = require '../config/config.php'; // Charge la configuration
+                // Utiliser un chemin absolu pour le fichier de configuration
+                $configFile = dirname(__DIR__) . '/app/config/config.php';
+                
+                if (!file_exists($configFile)) {
+                    throw new \Exception("Le fichier de configuration n'existe pas: $configFile");
+                }
+                
+                $config = require $configFile; // Charge la configuration
                 $dsn = 'mysql:host=' . $config['db']['host'] . ';dbname=' . $config['db']['dbname'] . ';charset=' . $config['db']['charset'];
                 
                 $options = [

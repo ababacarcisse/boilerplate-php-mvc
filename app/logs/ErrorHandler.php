@@ -1,51 +1,110 @@
 <?php
 
-namespace Core;
+namespace App\logs;
 
+/**
+ * Gère les erreurs de l'application
+ */
 class ErrorHandler
 {
-    private $logFile;
-
-    public function __construct($logFile)
+    /**
+     * Répertoire où les fichiers de logs sont stockés
+     */
+    private $logDirectory;
+    
+    /**
+     * Initialise le gestionnaire d'erreurs
+     */
+    public function __construct()
     {
-        $this->logFile = $logFile;
-        // Configure le gestionnaire d'erreurs
-        set_error_handler([$this, 'handleError']);
-        set_exception_handler([$this, 'handleException']);
-        register_shutdown_function([$this, 'shutdownHandler']);
-    }
-
-    // Gère les erreurs PHP
-    public function handleError($level, $message, $file, $line)
-    {
-        $this->log("Erreur [$level]: $message dans $file à la ligne $line");
-        if (defined('DEBUG') && DEBUG) {
-            echo "Erreur [$level]: $message dans $file à la ligne $line";
+        $this->logDirectory = dirname(__DIR__) . '/logs/files/';
+        
+        // Créer le répertoire de logs s'il n'existe pas
+        if (!file_exists($this->logDirectory)) {
+            mkdir($this->logDirectory, 0755, true);
         }
     }
-
-    // Gère les exceptions
-    public function handleException($exception)
+    
+    /**
+     * Enregistre une erreur dans un fichier de log
+     * 
+     * @param string $message Message d'erreur
+     * @param string $context Contexte de l'erreur (ex: login, api, etc.)
+     * @param int $level Niveau de l'erreur (1=info, 2=warning, 3=error)
+     * @return bool True si l'erreur a été journalisée
+     */
+    public function logError(string $message, string $context = 'general', int $level = 3): bool
     {
-        $this->log("Exception: " . $exception->getMessage() . " dans " . $exception->getFile() . " à la ligne " . $exception->getLine());
-        if (defined('DEBUG') && DEBUG) {
-            echo "Exception: " . $exception->getMessage() . " dans " . $exception->getFile() . " à la ligne " . $exception->getLine();
-        }
-    }
-
-    // Gère les erreurs fatales
-    public function shutdownHandler()
-    {
-        $error = error_get_last();
-        if ($error) {
-            $this->log("Erreur fatale: " . $error['message'] . " dans " . $error['file'] . " à la ligne " . $error['line']);
-        }
-    }
-
-    // Enregistre les logs dans un fichier
-    private function log($message)
-    {
+        $logFile = $this->logDirectory . date('Y-m-d') . '_' . $context . '.log';
+        
+        // Construire le message de log avec timestamp
         $timestamp = date('Y-m-d H:i:s');
-        file_put_contents($this->logFile, "[$timestamp] $message" . PHP_EOL, FILE_APPEND);
+        $levelText = $this->getLevelText($level);
+        $logMessage = "[$timestamp] [$levelText] $message" . PHP_EOL;
+        
+        // Écrire dans le fichier de log
+        return file_put_contents($logFile, $logMessage, FILE_APPEND) !== false;
+    }
+    
+    /**
+     * Convertit le niveau numérique en texte
+     * 
+     * @param int $level Niveau d'erreur
+     * @return string Niveau d'erreur en texte
+     */
+    private function getLevelText(int $level): string
+    {
+        switch ($level) {
+            case 1:
+                return 'INFO';
+            case 2:
+                return 'WARNING';
+            case 3:
+                return 'ERROR';
+            default:
+                return 'UNKNOWN';
+        }
+    }
+    
+    /**
+     * Gestionnaire global d'erreurs
+     * 
+     * @param int $errno Numéro de l'erreur
+     * @param string $errstr Message d'erreur
+     * @param string $errfile Fichier où l'erreur s'est produite
+     * @param int $errline Ligne où l'erreur s'est produite
+     * @return bool True pour éviter le gestionnaire d'erreurs standard
+     */
+    public function handleError(int $errno, string $errstr, string $errfile, int $errline): bool
+    {
+        $message = "$errstr in $errfile on line $errline";
+        $this->logError($message, 'php');
+        
+        return true;
+    }
+    
+    /**
+     * Enregistre une erreur liée aux emails dans un fichier de log
+     * 
+     * @param string $message Message d'erreur
+     * @param string $details Détails supplémentaires
+     * @return bool True si l'erreur a été journalisée
+     */
+    public function logEmailError(string $message, string $details = ''): bool
+    {
+        $logFile = $this->logDirectory . date('Y-m-d') . '_email.log';
+        
+        // Construire le message de log avec timestamp
+        $timestamp = date('Y-m-d H:i:s');
+        $logMessage = "[$timestamp] $message";
+        
+        if (!empty($details)) {
+            $logMessage .= "\nDétails: $details";
+        }
+        
+        $logMessage .= "\n" . str_repeat('-', 80) . "\n";
+        
+        // Écrire dans le fichier de log
+        return file_put_contents($logFile, $logMessage, FILE_APPEND) !== false;
     }
 } 

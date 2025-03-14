@@ -16,6 +16,9 @@ $router->post('/auth/forgot-password', [AuthController::class, 'forgotPassword']
 $router->post('/auth/verify-reset-token', [AuthController::class, 'verifyResetToken']);
 $router->post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
+// Ajouter un alias pour la route 'forgot-password' pour correspondre à l'endpoint attendu par le client
+$router->post('/auth/request-reset', [AuthController::class, 'forgotPassword']);
+
 // Routes protégées pour les utilisateurs
 $router->get('/users', [UserController::class, 'index'], new JWTAuthMiddleware(['admin']));
 $router->get('/users/{id}', [UserController::class, 'show'], new JWTAuthMiddleware(['admin']));

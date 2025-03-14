@@ -1,0 +1,159 @@
+<?php
+// Assurez-vous que les variables sont définies
+$errors = $errors ?? [];
+$old = $old ?? [];
+$token = $token ?? '';
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Définir un nouveau mot de passe - COUD</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .reset-container {
+            max-width: 600px;
+            margin: 5rem auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .reset-header {
+            background: #343a40;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .reset-body {
+            padding: 2rem;
+        }
+        .btn-primary {
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+        .btn-primary:hover {
+            background-color: #23272b;
+            border-color: #23272b;
+        }
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            z-index: 10;
+        }
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+        .error-text {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="reset-container">
+            <div class="reset-header bg-primary text-white p-4">
+                <h2 class="mb-0"><i class="fas fa-key me-2"></i>Définir un nouveau mot de passe</h2>
+            </div>
+            <div class="reset-body p-4">
+                <?php if (isset($_SESSION['success_message'])): ?>
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($_SESSION['success_message']); ?>
+                    </div>
+                    <?php unset($_SESSION['success_message']); ?>
+                <?php endif; ?>
+                
+                <?php if (isset($errors['auth'])): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($errors['auth']); ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (isset($errors['token'])): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i><?php echo htmlspecialchars($errors['token']); ?>
+                        <div class="mt-3">
+                            <a href="/coud_bouletplate/reset-password" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-sync me-1"></i> Demander un nouveau lien
+                            </a>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <form method="POST" action="/coud_bouletplate/reset-password/reset/<?php echo htmlspecialchars($token); ?>" novalidate>
+                        <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
+                        
+                        <!-- Mot de passe -->
+                        <div class="form-floating position-relative mb-3">
+                            <input type="password" class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" 
+                                id="password" name="password" placeholder="Nouveau mot de passe">
+                            <label for="password">Nouveau mot de passe</label>
+                            <span class="password-toggle" onclick="togglePasswordVisibility('password')">
+                                <i class="far fa-eye"></i>
+                            </span>
+                            <?php if (isset($errors['password'])): ?>
+                                <div class="error-text"><?php echo htmlspecialchars($errors['password']); ?></div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <!-- Confirmation du mot de passe -->
+                        <div class="form-floating position-relative mb-3">
+                            <input type="password" class="form-control <?php echo isset($errors['password_confirm']) ? 'is-invalid' : ''; ?>" 
+                                id="password_confirm" name="password_confirm" placeholder="Confirmer le mot de passe">
+                            <label for="password_confirm">Confirmer le mot de passe</label>
+                            <span class="password-toggle" onclick="togglePasswordVisibility('password_confirm')">
+                                <i class="far fa-eye"></i>
+                            </span>
+                            <?php if (isset($errors['password_confirm'])): ?>
+                                <div class="error-text"><?php echo htmlspecialchars($errors['password_confirm']); ?></div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer le nouveau mot de passe
+                            </button>
+                        </div>
+                    </form>
+                <?php endif; ?>
+                
+                <div class="mt-4 text-center">
+                    <a href="/coud_bouletplate/login" class="btn btn-link text-muted">
+                        <i class="fas fa-arrow-left me-1"></i> Retour à la connexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+</body>
+</html> 

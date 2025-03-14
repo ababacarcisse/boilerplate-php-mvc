@@ -136,4 +136,62 @@ class Router
             exit;
         }
     }
+
+    /**
+     * Associe un contrôleur à un préfixe d'URL (routage par convention)
+     * 
+     * @param string $prefix Le préfixe d'URL (ex: /users)
+     * @param string $controllerClass Le nom complet de la classe du contrôleur
+     * @param string $basePath Le chemin de base de l'application
+     * @return void
+     */
+    public function resource($prefix, $controllerClass, $basePath = '/coud_bouletplate')
+    {
+        $this->add($prefix . '(/.*)?', function() use ($prefix, $controllerClass, $basePath) {
+            // Instancier le contrôleur
+            $controller = new $controllerClass();
+            
+            // Récupérer l'URI actuelle
+            $uri = $_SERVER['REQUEST_URI'];
+            
+            // Si l'URI contient un segment après le préfixe, l'utiliser comme action
+            if (strpos($uri, $basePath . $prefix . '/') !== false) {
+                $action = substr($uri, strlen($basePath . $prefix) + 1);
+                if (method_exists($controller, $action)) {
+                    // Extraire les paramètres éventuels (tout ce qui suit après l'action)
+                    $params = [];
+                    if (($posSlash = strpos($action, '/')) !== false) {
+                        $params = explode('/', substr($action, $posSlash + 1));
+                        $action = substr($action, 0, $posSlash);
+                    }
+                    
+                    // Appeler la méthode du contrôleur avec les paramètres
+                    call_user_func_array([$controller, $action], [$params]);
+                } else {
+                    // Si l'action n'existe pas, afficher une erreur ou rediriger
+                    header("HTTP/1.0 404 Not Found");
+                    echo "Action non trouvée : " . htmlspecialchars($action);
+                }
+            } elseif (strpos($uri, $prefix . '/') !== false) {
+                // Gérer le cas où le basePath n'est pas inclus dans l'URI
+                $action = substr($uri, strlen($prefix) + 1);
+                if (method_exists($controller, $action)) {
+                    // Extraire les paramètres éventuels
+                    $params = [];
+                    if (($posSlash = strpos($action, '/')) !== false) {
+                        $params = explode('/', substr($action, $posSlash + 1));
+                        $action = substr($action, 0, $posSlash);
+                    }
+                    
+                    call_user_func_array([$controller, $action], [$params]);
+                } else {
+                    header("HTTP/1.0 404 Not Found");
+                    echo "Action non trouvée : " . htmlspecialchars($action);
+                }
+            } else {
+                // Appeler l'action par défaut (index)
+                $controller->index();
+            }
+        });
+    }
 }

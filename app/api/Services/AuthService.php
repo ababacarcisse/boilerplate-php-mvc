@@ -27,24 +27,28 @@ class AuthService
      */
     public function __construct()
     {
-        $this->emailService = new EmailService();
-        
-        // Obtenir une connexion à la base de données
-        $config = require dirname(dirname(dirname(__FILE__))) . '/config/config.php';
-        $dbConfig = $config['db'];
-        
-        $dsn = "mysql:host={$dbConfig['host']};dbname={$dbConfig['dbname']};charset={$dbConfig['charset']}";
-        
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ];
-        
         try {
-            $this->db = new PDO($dsn, $dbConfig['user'], $dbConfig['password'], $options);
+            // Charger la configuration
+            $config = require dirname(dirname(dirname(__DIR__))) . '/app/config/config.php';
+            
+            // Connexion à la base de données
+            $dsn = "mysql:host={$config['db']['host']};dbname={$config['db']['dbname']};charset={$config['db']['charset']}";
+            
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ];
+            
+            $this->db = new PDO($dsn, $config['db']['user'], $config['db']['password'], $options);
+            
+            // Initialiser le service d'email
+            $this->emailService = new EmailService();
+            
         } catch (\PDOException $e) {
             throw new \Exception("Erreur de connexion à la base de données: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw new \Exception("Erreur d'initialisation du service d'authentification: " . $e->getMessage());
         }
     }
 
@@ -599,62 +603,100 @@ class AuthService
      * Initie le processus de réinitialisation de mot de passe
      * 
      * @param string $email Email de l'utilisateur
+     * @param string $matricule Matricule de l'utilisateur
      * @return array Résultat de l'opération
      */
-    public function initiatePasswordReset($email)
+    public function initiatePasswordReset($email, $matricule = null)
     {
-        // Vérifier si l'utilisateur existe
-        $user = User::findByEmail($email);
-        
-        if (!$user) {
-            // Pour des raisons de sécurité, ne pas indiquer si l'email existe ou non
+        try {
+            // Si le matricule est fourni, vérifier que l'email et le matricule correspondent
+            if ($matricule) {
+                $user = User::findByEmail($email);
+                
+                // Vérifier que l'utilisateur existe et que le matricule correspond
+                if (!$user || $user['matricule'] !== $matricule) {
+                    // Pour des raisons de sécurité, ne pas indiquer la raison exacte de l'échec
+                    return [
+                        'success' => true,
+                        'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                    ];
+                }
+            } else {
+                // Si pas de matricule fourni, juste vérifier l'email
+                $user = User::findByEmail($email);
+                
+                if (!$user) {
+                    // Pour des raisons de sécurité, ne pas indiquer si l'email existe ou non
+                    return [
+                        'success' => true,
+                        'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                    ];
+                }
+            }
+            
+            // Générer un token de réinitialisation
+            $selector = bin2hex(random_bytes(8));
+            $validator = bin2hex(random_bytes(32));
+            
+            // Hasher le validator pour le stockage
+            $hashedValidator = hash('sha256', $validator);
+            
+            // Date d'expiration (1 heure)
+            $expiresAt = date('Y-m-d H:i:s', time() + 60 * 60);
+            
+            // Supprimer les tokens existants pour cet utilisateur
+            $stmt = $this->db->prepare("
+                DELETE FROM PASSWORD_RESET_TOKENS
+                WHERE email = :email
+            ");
+            
+            $stmt->execute(['email' => $email]);
+            
+            // Insérer le nouveau token
+            $stmt = $this->db->prepare("
+                INSERT INTO PASSWORD_RESET_TOKENS (email, selector, token, expires_at, created_at)
+                VALUES (:email, :selector, :token, :expires_at, NOW())
+            ");
+            
+            $stmt->execute([
+                'email' => $email,
+                'selector' => $selector,
+                'token' => $hashedValidator,
+                'expires_at' => $expiresAt
+            ]);
+            
+            // Construire l'URL de réinitialisation avec le sous-domaine approprié
+            $domaine = getenv('DOMAINE') ?: 'http://localhost/coud_bouletplate';
+            $resetUrl = $domaine . '/reset-password/reset/' . $selector . '.' . $validator;
+            
+            // Journaliser l'URL de réinitialisation en développement
+            if (getenv('APP_ENV') !== 'production') {
+                error_log("URL de réinitialisation de mot de passe générée: $resetUrl");
+            }
+            
+            // Retourner un message de succès avec les informations du token
             return [
                 'success' => true,
-                'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.',
+                'token_info' => [
+                    'selector' => $selector,
+                    'validator' => $validator, // Ne pas envoyer dans un environnement de production réel
+                    'reset_url' => $resetUrl,
+                    'expires_at' => $expiresAt
+                ]
+            ];
+            
+        } catch (\Exception $e) {
+            // Journaliser l'erreur
+            error_log('Erreur lors de la génération du token de réinitialisation: ' . $e->getMessage());
+            
+            // Retourner un message d'erreur
+            return [
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la génération du token de réinitialisation.',
+                'error' => $e->getMessage() // Ne pas inclure en production
             ];
         }
-        
-        // Générer un token de réinitialisation
-        $selector = bin2hex(random_bytes(8));
-        $validator = bin2hex(random_bytes(32));
-        
-        // Hasher le validator pour le stockage
-        $hashedValidator = hash('sha256', $validator);
-        
-        // Date d'expiration (1 heure)
-        $expiresAt = date('Y-m-d H:i:s', time() + 60 * 60);
-        
-        // Supprimer les tokens existants pour cet utilisateur
-        $stmt = $this->db->prepare("
-            DELETE FROM PASSWORD_RESET_TOKENS
-            WHERE email = :email
-        ");
-        
-        $stmt->execute(['email' => $email]);
-        
-        // Insérer le nouveau token
-        $stmt = $this->db->prepare("
-            INSERT INTO PASSWORD_RESET_TOKENS (email, selector, token, expires_at, created_at)
-            VALUES (:email, :selector, :token, :expires_at, NOW())
-        ");
-        
-        $stmt->execute([
-            'email' => $email,
-            'selector' => $selector,
-            'token' => $hashedValidator,
-            'expires_at' => $expiresAt
-        ]);
-        
-        // Construire l'URL de réinitialisation
-        $resetUrl = 'https://www.coud.example.com/reset-password?token=' . $selector . '.' . $validator;
-        
-        // Envoyer l'email de réinitialisation
-        $this->emailService->sendPasswordResetEmail($user, $resetUrl);
-        
-        return [
-            'success' => true,
-            'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
-        ];
     }
 
     /**

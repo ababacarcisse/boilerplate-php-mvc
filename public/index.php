@@ -4,6 +4,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Core\Router;
 use App\Controllers\HomeController;
+use App\Controllers\LoginController;
+use App\Controllers\RegisterController;
+use App\Controllers\Reset_PasswordController;
 
 // Activer l'affichage des erreurs pendant le développement
 ini_set('display_errors', 1);
@@ -68,6 +71,11 @@ $router->add('/about', function() {
 $router->add('/contact', function() {
     echo 'Contactez-nous';
 });
+
+// Utiliser la nouvelle méthode resource pour ajouter les routes des contrôleurs
+$router->resource('/login', \App\Controllers\LoginController::class);
+$router->resource('/register', \App\Controllers\RegisterController::class);
+$router->resource('/reset-password', \App\Controllers\Reset_PasswordController::class);
 
 // Dispatcher la requête actuelle
 $uri = $_SERVER['REQUEST_URI'];

@@ -21,9 +21,9 @@ Notre système utilise deux types de tokens :
 
 ### Gestion des Utilisateurs Pré-enregistrés
 
-Notre application est conçue pour un système universitaire où les étudiants sont déjà pré-enregistrés dans la base de données `etudiants`. Le processus d'inscription consiste donc à :
-1. Vérifier si l'étudiant existe dans la base de données `etudiants`
-2. Créer ou activer un compte utilisateur dans la table `users`
+Notre application est conçue pour un système universitaire où les étudiants sont déjà pré-enregistrés dans la base de données `ETUDIANTS`. Le processus d'inscription consiste donc à :
+1. Vérifier si l'étudiant existe dans la base de données `ETUDIANTS`
+2. Créer ou activer un compte utilisateur dans la table `USERS`
 
 ## Architecture du Code
 

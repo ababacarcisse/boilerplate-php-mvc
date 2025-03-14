@@ -9,6 +9,7 @@ class EmailService
 {
     private $mailer;
     private $config;
+    private $lastError;
 
     public function __construct()
     {
@@ -22,12 +23,16 @@ class EmailService
         $this->config = $config['smtp'];
         
         $this->mailer = new PHPMailer(true);
+        $this->lastError = null;
         $this->setupMailer();
     }
 
     private function setupMailer()
     {
         try {
+            // Log de configuration SMTP
+            error_log("Configuration SMTP: host={$this->config['host']}, port={$this->config['port']}, user={$this->config['username']}");
+            
             // Configuration SMTP
             $this->mailer->isSMTP();
             $this->mailer->Host = $this->config['host'];
@@ -38,12 +43,21 @@ class EmailService
             $this->mailer->Port = $this->config['port'];
             $this->mailer->CharSet = 'UTF-8';
             
+            // Activer le débogage SMTP en développement
+            if (getenv('APP_ENV') !== 'production') {
+                $this->mailer->SMTPDebug = 1; // Output debug info
+                $this->mailer->Debugoutput = function($str, $level) {
+                    error_log("SMTP DEBUG: $str");
+                };
+            }
+            
             // Expéditeur par défaut
             $this->mailer->setFrom($this->config['username'], 'Centre Universitaire COUD');
             
             // Activer le HTML
             $this->mailer->isHTML(true);
         } catch (Exception $e) {
+            error_log("Erreur de configuration de l'email: " . $e->getMessage());
             throw new \Exception('Erreur de configuration de l\'email: ' . $e->getMessage());
         }
     }
@@ -54,6 +68,10 @@ class EmailService
     public function send(string $to, string $subject, string $body, array $attachments = []): bool
     {
         try {
+            // Log pour le débogage
+            error_log("Tentative d'envoi d'email à: $to");
+            error_log("Sujet: $subject");
+            
             $this->mailer->clearAddresses();
             $this->mailer->clearAttachments();
             
@@ -66,10 +84,21 @@ class EmailService
                 $this->mailer->addAttachment($attachment);
             }
             
-            return $this->mailer->send();
+            $result = $this->mailer->send();
+            
+            if ($result) {
+                error_log("Email envoyé avec succès à: $to");
+                $this->lastError = null;
+            } else {
+                $this->lastError = $this->mailer->ErrorInfo;
+                error_log("Échec de l'envoi d'email à: $to - Erreur: " . $this->lastError);
+            }
+            
+            return $result;
         } catch (Exception $e) {
             // En production, loguer l'erreur plutôt que de la lever
-            error_log('Erreur d\'envoi d\'email: ' . $e->getMessage());
+            $this->lastError = $e->getMessage();
+            error_log('Erreur d\'envoi d\'email: ' . $this->lastError . ' - Trace: ' . $e->getTraceAsString());
             return false;
         }
     }
@@ -166,6 +195,13 @@ class EmailService
     {
         $subject = 'COUD - Réinitialisation de votre mot de passe';
         
+        // Construire le nom complet à partir du nom et prénom
+        $fullName = ($user['prenom'] ?? '') . ' ' . ($user['nom'] ?? '');
+        // Si l'utilisateur n'a pas de nom ou prénom, utiliser l'email
+        if (trim($fullName) === '') {
+            $fullName = $user['email'] ?? 'Utilisateur';
+        }
+        
         $body = <<<HTML
         <html>
         <head>
@@ -186,7 +222,7 @@ class EmailService
                     <h1>Réinitialisation de mot de passe</h1>
                 </div>
                 <div class="content">
-                    <p>Bonjour {$user['fullName']},</p>
+                    <p>Bonjour {$fullName},</p>
                     <p>Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte.</p>
                     <p>Pour réinitialiser votre mot de passe, veuillez cliquer sur le bouton ci-dessous :</p>
                     <p style="text-align: center;">
@@ -209,5 +245,15 @@ class EmailService
         HTML;
         
         return $this->send($user['email'], $subject, $body);
+    }
+
+    /**
+     * Retourne la dernière erreur survenue
+     * 
+     * @return string|null La dernière erreur ou null si aucune erreur
+     */
+    public function getLastError(): ?string
+    {
+        return $this->lastError ?? $this->mailer->ErrorInfo;
     }
 } 

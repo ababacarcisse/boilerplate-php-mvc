@@ -4,6 +4,14 @@ namespace Core;
 
 abstract class Controller
 {
+    /**
+     * Constructeur de base pour tous les contrôleurs
+     */
+    public function __construct()
+    {
+        // Constructeur vide pour permettre l'appel depuis les classes filles
+    }
+    
     // Charge une vue et passe des données à celle-ci
     protected function render($view, $data = [])
     {
