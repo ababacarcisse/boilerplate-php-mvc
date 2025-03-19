@@ -1,4 +1,5 @@
 <?php
+var_dump("Démarrage de l'application"); // Point de débogage 1
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -7,8 +8,10 @@ use App\Controllers\HomeController;
 use App\Controllers\LoginController;
 use App\Controllers\RegisterController;
 use App\Controllers\Reset_PasswordController;
-
-// Activer l'affichage des erreurs pendant le développement
+use App\Controllers\EntresController;
+use App\Controllers\SortiesController;
+use App\Controllers\VentesController;
+// Afficher toutes les erreurs pour le débogage
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -64,19 +67,23 @@ $router->add('/', function() {
     $controller->index();
 });
 
-$router->add('/about', function() {
-    echo 'À propos de nous';
+$router->add('/entres', function() {
+    $controller = new EntresController();
+    $controller->index();
 });
-
-$router->add('/contact', function() {
-    echo 'Contactez-nous';
+ 
+$router->add('/sorties', function() {
+    $controller = new SortiesController();
+    $controller->index();
+});
+ $router->add('/ventes', function() {
+    $controller = new VentesController();
+    $controller->index();
 });
 
 // Utiliser la nouvelle méthode resource pour ajouter les routes des contrôleurs
 $router->resource('/login', \App\Controllers\LoginController::class);
-$router->resource('/register', \App\Controllers\RegisterController::class);
-$router->resource('/reset-password', \App\Controllers\Reset_PasswordController::class);
-
+  
 // Dispatcher la requête actuelle
 $uri = $_SERVER['REQUEST_URI'];
 $router->dispatch($uri);

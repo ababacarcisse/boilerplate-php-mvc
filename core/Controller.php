@@ -15,6 +15,10 @@ abstract class Controller
     // Charge une vue et passe des données à celle-ci
     protected function render($view, $data = [])
     {
+        // Définir les variables globales nécessaires pour toutes les vues
+        require_once __DIR__ . '/../app/config.php';
+        require_once __DIR__ . '/../app/helpers/AssetHelper.php';
+        
         // Utilisez __DIR__ pour un chemin absolu plutôt qu'un chemin relatif
         $viewPath = dirname(__DIR__) . "/app/Views/$view.php";
         

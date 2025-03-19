@@ -51,9 +51,8 @@ class LoginController extends Controller
             
             // Rediriger si déjà connecté (sauf pour la déconnexion)
             if ($this->loginService->isLoggedIn() && 
-                strpos($_SERVER['REQUEST_URI'], '/login/logout') === false &&
-                strpos($_SERVER['REQUEST_URI'], '/coud_bouletplate/login/logout') === false) {
-                $this->redirectTo('/');
+                strpos($_SERVER['REQUEST_URI'], '/gestion-pharmacie/login/logout') === false) {
+                $this->redirectTo('/gestion-pharmacie/');
             }
         } catch (\Exception $e) {
             error_log("Erreur d'initialisation des dépendances: " . $e->getMessage());

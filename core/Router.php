@@ -28,7 +28,7 @@ class Router
     public function dispatch($url)
     {
         // Supprimer le sous-répertoire du chemin si présent
-        $base_path = '/coud_bouletplate';
+        $base_path = '/gestion-pharmacie';
         if (strpos($url, $base_path) === 0) {
             $url = substr($url, strlen($base_path));
         }
@@ -145,7 +145,7 @@ class Router
      * @param string $basePath Le chemin de base de l'application
      * @return void
      */
-    public function resource($prefix, $controllerClass, $basePath = '/coud_bouletplate')
+    public function resource($prefix, $controllerClass, $basePath = '/gestion-pharmacie')
     {
         $this->add($prefix . '(/.*)?', function() use ($prefix, $controllerClass, $basePath) {
             // Instancier le contrôleur

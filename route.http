@@ -1,26 +1,16 @@
  
- // Test d'inscription d'un nouvel utilisateur
-// POST  http://localhost/coud_bouletplate/api/auth/register
-// Content-Type: application/json
-//
-// {
-//     "matricule": "MAT2025001",
-//     "nom": "Diop",
-//     "prenom": "Alioune",
-//     "date_naissance": "2002-05-14",
-//     "email": "ababacarcisse18@gmail.com",
-//     "password": "motdepasse123"
-// }
+  Test d'inscription d'un nouvel utilisateur
+ POST  http:localhost/GESTION-PHARMACIE/api/auth/register
+ Content-Type: application/json
 
-POST  http://localhost/coud_bouletplate/api/auth/forgot-password
-Content-Type: application/json
-
-{
-    "matricule": "MAT2025001",
-    "email": "ababacarcisse18@gmail.com"
-}
-
-
+ {
+     "matricule": "MAT2025001", 
+     "nom": "Diop",
+     "prenom": "Alioune",
+     "date_naissance": "2002-05-14",
+     "email": "ababacarcisse18@gmail.com",     
+     "password": "motdepasse123"
+ }
 
 
 

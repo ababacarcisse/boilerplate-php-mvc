@@ -1,8 +1,8 @@
 :root {
     --primary: #4361ee;
     --secondary: #3f37c9;
-    --accent: #4cc9f0;
-    --light: #f8f9fa;
+    --accent: #ff9800;
+    --light: #ffffff;
     --dark: #212529;
     --success: #4caf50;
     --danger: #f44336;
@@ -22,97 +22,184 @@ body {
     background-color: var(--light);
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+/* Classes personnalisées pour les couleurs */
+.bg-primary-custom { 
+    background-color: var(--primary) !important; 
 }
 
+.bg-secondary-custom { 
+    background-color: var(--secondary) !important; 
+}
+
+.bg-accent-custom { 
+    background-color: var(--accent) !important; 
+}
+
+/* Sidebar */
+.sidebar { 
+    height: 100vh; 
+    position: fixed; 
+    right: 0; 
+    top: 0; 
+    width: 250px; 
+    z-index: 1000; 
+}
+
+/* Contenu principal */
+.main-content { 
+    margin-right: 250px; 
+}
+
+/* Cartes du tableau de bord */
+.card-dashboard { 
+    transition: all 0.3s; 
+}
+
+.card-dashboard:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+}
+
+/* Styles pour les éléments d'origine */
 header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: white;
-    padding: 80px 0;
+    background-color: var(--primary);
+    color: var(--light);
+    padding: 20px;
     text-align: center;
 }
 
-.hero h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
+nav ul {
+    list-style: none;
+    padding: 0;
 }
 
-.hero p {
-    font-size: 1.2rem;
-    max-width: 700px;
-    margin: 0 auto 30px;
+nav ul li {
+    display: inline;
+    margin-right: 15px;
 }
 
-.btn {
-    display: inline-block;
-    background-color: var(--accent);
-    color: white;
-    padding: 12px 30px;
-    border-radius: 30px;
+nav ul li a {
+    color: var(--light);
     text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
 }
 
-.btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.dashboard {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
 }
 
-.features {
-    padding: 80px 0;
-}
-
-.features h2 {
+.card {
+    background-color: var(--accent);
+    color: var(--light);
+    padding: 20px;
+    border-radius: 5px;
     text-align: center;
-    margin-bottom: 50px;
-    font-size: 2rem;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.feature-card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-10px);
-}
-
-.feature-card h3 {
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.cta {
-    background-color: var(--secondary);
-    color: white;
-    padding: 80px 0;
-    text-align: center;
-}
-
-.cta h2 {
-    margin-bottom: 20px;
-    font-size: 2rem;
 }
 
 footer {
     background-color: var(--dark);
     color: var(--light);
-    padding: 40px 0;
     text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Styles pour le popup modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s;
+}
+
+.modal-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    background-color: var(--primary);
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+    gap: 10px;
+}
+
+.close-modal {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Style du bouton principal */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+}
+
+/* Style des messages d'erreur */
+.error-message {
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+/* Champs obligatoires */
+.form-label::after {
+    content: " *";
+    color: var(--danger);
+}
+
+.form-label:not(.required)::after {
+    content: "";
 }
