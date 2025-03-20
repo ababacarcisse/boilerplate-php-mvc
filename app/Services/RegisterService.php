@@ -17,8 +17,8 @@ class RegisterService
      */
     public function __construct()
     {
-        // Construire l'URL de l'API
-        $this->apiUrl = 'http://localhost/coud_bouletplate/api/auth/register';
+        // URL de l'API d'inscription avec BASE_URL
+        $this->apiUrl = 'http://localhost/gestion-pharmacie/api/auth/register';
         
         // Journaliser pour le débogage
         error_log("RegisterService initialisé avec l'URL: " . $this->apiUrl);

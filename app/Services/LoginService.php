@@ -26,8 +26,8 @@ class LoginService
             EnvLoader::load($envFile);
         }
         
-        // Utiliser directement l'URL testée qui fonctionne
-        $this->apiUrl = 'http://localhost/coud_bouletplate/api/auth/login';
+        // Utiliser BASE_URL au lieu de l'URL codée en dur
+        $this->apiUrl = 'http://localhost/gestion-pharmacie/api/auth/login';
         
         // Log pour le débogage
         error_log("LoginService initialisé avec l'URL API: " . $this->apiUrl);

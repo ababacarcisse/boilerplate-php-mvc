@@ -22,9 +22,9 @@ class ResetPasswordService
      */
     public function __construct()
     {
-        // Construire les URLs des APIs
-        $this->requestResetApiUrl = 'http://localhost/coud_bouletplate/api/auth/request-reset';
-        $this->resetPasswordApiUrl = 'http://localhost/coud_bouletplate/api/auth/reset-password';
+        // Construire les URLs des APIs avec BASE_URL
+        $this->requestResetApiUrl = 'http://localhost/gestion-pharmacie/api/auth/request-reset';
+        $this->resetPasswordApiUrl = 'http://localhost/gestion-pharmacie/api/auth/reset-password';
         
         // Journaliser pour le débogage
         error_log("ResetPasswordService initialisé avec l'URL de demande: " . $this->requestResetApiUrl);

@@ -9,7 +9,7 @@ class Helper
      */
     public static function url($path = '')
     {
-        $base_url = '/coud_bouletplate';
+        $base_url = '/gestion-pharmacie';
         return $base_url . '/' . ltrim($path, '/');
     }
     
