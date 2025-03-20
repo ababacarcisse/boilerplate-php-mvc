@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+require_once dirname(__DIR__) . '/config.php';
+
 /**
  * Service pour la réinitialisation de mot de passe via l'API
  */
@@ -22,9 +24,9 @@ class ResetPasswordService
      */
     public function __construct()
     {
-        // Construire les URLs des APIs avec BASE_URL
-        $this->requestResetApiUrl = 'http://localhost/gestion-pharmacie/api/auth/request-reset';
-        $this->resetPasswordApiUrl = 'http://localhost/gestion-pharmacie/api/auth/reset-password';
+        // Utiliser la constante BASE_URL
+        $this->requestResetApiUrl = 'http://localhost' . BASE_URL . '/api/auth/request-reset';
+        $this->resetPasswordApiUrl = 'http://localhost' . BASE_URL . '/api/auth/reset-password';
         
         // Journaliser pour le débogage
         error_log("ResetPasswordService initialisé avec l'URL de demande: " . $this->requestResetApiUrl);

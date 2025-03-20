@@ -15,43 +15,9 @@ $old = $old ?? [];
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .reset-container {
-            max-width: 600px;
-            margin: 5rem auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-        }
-        .reset-header {
-            background: #343a40;
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        .reset-body {
-            padding: 2rem;
-        }
-        .btn-primary {
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-primary:hover {
-            background-color: #23272b;
-            border-color: #23272b;
-        }
-        .form-floating {
-            margin-bottom: 1rem;
-        }
-        .error-text {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
+        <?php include __DIR__ . '/../../../public/css/forgot-password.css'; ?>
     </style>
+
 </head>
 <body>
     <div class="container">
@@ -107,12 +73,12 @@ $old = $old ?? [];
                     <div class="mt-4">
                         <div class="row">
                             <div class="col-6">
-                                <a href="/coud_bouletplate/login" class="btn btn-link text-muted p-0">
+                                <a href="<?= BASE_URL ?>/login" class="btn btn-link text-muted p-0">
                                     <i class="fas fa-arrow-left me-1"></i> Retour à la connexion
                                 </a>
                             </div>
                             <div class="col-6 text-end">
-                                <a href="/coud_bouletplate/register" class="btn btn-link text-muted p-0">
+                                <a href="<?= BASE_URL ?>/register" class="btn btn-link text-muted p-0">
                                     Créer un compte <i class="fas fa-user-plus ms-1"></i>
                                 </a>
                             </div>

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+require_once dirname(__DIR__) . '/config.php';
+
 use App\Lib\EnvLoader;
 use App\Models\User;
 
@@ -26,8 +28,8 @@ class LoginService
             EnvLoader::load($envFile);
         }
         
-        // Utiliser BASE_URL au lieu de l'URL codée en dur
-        $this->apiUrl = 'http://localhost/gestion-pharmacie/api/auth/login';
+        // Utiliser la constante BASE_URL
+        $this->apiUrl = 'http://localhost' . BASE_URL . '/api/auth/login';
         
         // Log pour le débogage
         error_log("LoginService initialisé avec l'URL API: " . $this->apiUrl);

@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+require_once dirname(__DIR__) . '/config.php';
+
 // Activer l'affichage des erreurs pour le débogage
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -49,10 +51,10 @@ class LoginController extends Controller
             // Initialiser le service de login
             $this->loginService = new LoginService();
             
-            // Rediriger si déjà connecté (sauf pour la déconnexion)
+            // Utiliser la constante BASE_URL pour la vérification
             if ($this->loginService->isLoggedIn() && 
-                strpos($_SERVER['REQUEST_URI'], '/gestion-pharmacie/login/logout') === false) {
-                $this->redirectTo('/gestion-pharmacie/');
+                strpos($_SERVER['REQUEST_URI'], BASE_URL . '/login/logout') === false) {
+                $this->redirectTo(BASE_URL . '/');
             }
         } catch (\Exception $e) {
             error_log("Erreur d'initialisation des dépendances: " . $e->getMessage());
@@ -73,7 +75,8 @@ class LoginController extends Controller
         $this->render('login/index', [
             'title' => 'Connexion',
             'errors' => [],
-            'old' => []
+            'old' => [],
+            'BASE_URL' => BASE_URL
         ]);
     }
     
@@ -182,13 +185,13 @@ class LoginController extends Controller
      * 
      * @param string $url URL de destination
      */
-    private function redirectTo(string $url): void
+    private function redirectTo($url): void
     {
-        // Préfixer l'URL avec le sous-répertoire si ce n'est pas déjà le cas
-        if (strpos($url, '/coud_bouletplate') !== 0 && $url !== '/') {
-            $url = '/coud_bouletplate' . $url;
+        // Utiliser la constante BASE_URL
+        if (strpos($url, BASE_URL) !== 0 && $url !== '/') {
+            $url = BASE_URL . $url;
         } else if ($url === '/') {
-            $url = '/coud_bouletplate/';
+            $url = BASE_URL . '/';
         }
         
         header('Location: ' . $url);

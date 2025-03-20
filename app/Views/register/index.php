@@ -15,49 +15,7 @@ $old = $old ?? [];
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .register-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-        }
-        .register-header {
-            background: #343a40;
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        .register-body {
-            padding: 2rem;
-        }
-        .btn-primary {
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-primary:hover {
-            background-color: #23272b;
-            border-color: #23272b;
-        }
-        .password-toggle {
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 35px;
-            z-index: 10;
-        }
-        .form-floating {
-            margin-bottom: 1rem;
-        }
-        .error-text {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
+        <?php include __DIR__ . '/../../../public/css/register.css'; ?>
     </style>
 </head>
 <body>
@@ -75,7 +33,7 @@ $old = $old ?? [];
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST" action="/coud_bouletplate/register" novalidate>
+                <form method="POST" action="<?= BASE_URL ?>/register" novalidate>
                     <div class="row">
                         <!-- Matricule -->
                         <div class="col-md-6">
@@ -182,7 +140,7 @@ $old = $old ?? [];
                     </div>
                     
                     <p class="text-center mt-3">
-                        Vous avez déjà un compte? <a href="/coud_bouletplate/login">Connectez-vous</a>
+                        Vous avez déjà un compte? <a href="<?= BASE_URL ?>/login">Connectez-vous</a>
                     </p>
                 </form>
             </div>

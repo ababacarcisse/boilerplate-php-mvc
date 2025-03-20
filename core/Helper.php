@@ -2,6 +2,8 @@
 
 namespace Core;
 
+require_once dirname(__DIR__) . '/app/config.php';
+
 class Helper
 {
     /**
@@ -9,8 +11,7 @@ class Helper
      */
     public static function url($path = '')
     {
-        $base_url = '/gestion-pharmacie';
-        return $base_url . '/' . ltrim($path, '/');
+        return BASE_URL . '/' . ltrim($path, '/');
     }
     
     /**

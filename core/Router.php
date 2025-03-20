@@ -2,6 +2,8 @@
 
 namespace Core;
 
+require_once dirname(__DIR__) . '/app/config.php';
+
 class Router
 {
     protected $routes = [];
@@ -27,6 +29,11 @@ class Router
 
     public function dispatch($url)
     {
+        // Utiliser la constante BASE_URL
+        if (strpos($url, BASE_URL) === 0) {
+            $url = substr($url, strlen(BASE_URL));
+        }
+        
         // Supprimer le sous-répertoire du chemin si présent
         $base_path = '/gestion-pharmacie';
         if (strpos($url, $base_path) === 0) {
@@ -145,8 +152,10 @@ class Router
      * @param string $basePath Le chemin de base de l'application
      * @return void
      */
-    public function resource($prefix, $controllerClass, $basePath = '/gestion-pharmacie')
+    public function resource($prefix, $controllerClass, $basePath = null)
     {
+        // Utiliser la constante BASE_URL comme valeur par défaut
+        $basePath = $basePath ?? BASE_URL;
         $this->add($prefix . '(/.*)?', function() use ($prefix, $controllerClass, $basePath) {
             // Instancier le contrôleur
             $controller = new $controllerClass();

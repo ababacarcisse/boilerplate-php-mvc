@@ -17,7 +17,7 @@
 <body>
     <div class="container">
         <div class="d-flex align-items-center justify-content-center vh-100">
-            <div class="card login-card">
+            <div class="card login-card" style="width: 350px;">
                 <div class="login-header">
                     <h3 class="mb-0">
                         <i class="fas fa-user-circle"></i> Connexion
@@ -51,9 +51,9 @@
                         </div>
                     <?php endif; ?>
                     
-                    <form action="/coud_bouletplate/login" method="POST" novalidate>
+                    <form action="<?= BASE_URL ?>/login" method="POST" novalidate>
                         <!-- Champ Matricule -->
-                        <div class="mb-3" style="margin-top: 20px;margin-bottom: 20px;">
+                        <div class="mb-3" style="margin-top: 20px;margin-bottom: 20px;margin-left: 10px;margin-right: 10px;">
                             <label for="matricule" class="form-label">Matricule</label>
                             <div class="input-group">
                                 <span class="input-group-text">
@@ -77,7 +77,7 @@
                         </div>
                         
                         <!-- Champ Mot de passe -->
-                        <div class="mb-4">
+                        <div class="mb-4" style="margin-left: 10px;margin-right: 10px;">
                             <label for="password" class="form-label">Mot de passe</label>
                             <div class="input-group">
                                 <span class="input-group-text">
@@ -103,7 +103,7 @@
                         </div>
                         
                         <!-- Options et bouton de connexion -->
-                        <div class="row mb-3">
+                        <div class="row mb-3" style="margin-left: 10px;margin-right: 10px;">
                             <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="remember" name="remember">
@@ -113,11 +113,11 @@
                                 </div>
                             </div>
                             <div class="col-6 text-end">
-                                <a href="/coud_bouletplate/reset-password" class="text-decoration-none">Mot de passe oublié?</a>
+                                <a href="<?= BASE_URL ?>/reset-password" class="text-decoration-none">Mot de passe oublié?</a>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
+                        <div class="d-grid gap-2" style="margin-left: 10px;margin-right: 10px;">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-sign-in-alt"></i> Se connecter
                             </button>
@@ -128,7 +128,7 @@
                     
                     <div class="text-center">
                         <p>Vous n'avez pas de compte?</p>
-                        <a href="/coud_bouletplate/register" class="btn btn-outline-primary">
+                        <a href="<?= BASE_URL ?>/register" class="btn btn-outline-primary">
                             <i class="fas fa-user-plus"></i> S'inscrire
                         </a>
                     </div>
@@ -139,7 +139,7 @@
     
     <!-- Bootstrap & JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/public/js/login.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/login.js"></script>
     <script>
         // Script pour afficher/masquer le mot de passe
         document.getElementById('togglePassword').addEventListener('click', function() {

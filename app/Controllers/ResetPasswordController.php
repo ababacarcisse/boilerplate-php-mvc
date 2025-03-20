@@ -2,16 +2,19 @@
 
 namespace App\Controllers;
 
+
 use Core\Controller;
-use App\Validations\Reset_passwordValidator;
+use App\Validations\ResetPasswordValidator;
 use App\Services\ResetPasswordService;
 use App\logs\ErrorHandler;
 
 /**
- * Contrôleur pour la réinitialisation du mot de passe
+ * Généré automatiquement par Coud le " . date('Y-m-d H:i') . "
+ * Contrôleur: ResetPasswordController
  */
-class Reset_PasswordController extends Controller
+class ResetPasswordController extends Controller
 {
+   
     /**
      * Service de réinitialisation de mot de passe
      */
@@ -41,7 +44,7 @@ class Reset_PasswordController extends Controller
         
         try {
             // Initialiser le validateur
-            $this->validator = new Reset_passwordValidator();
+            $this->validator = new ResetPasswordValidator();
             
             // Initialiser le gestionnaire d'erreurs
             $this->errorHandler = new ErrorHandler();

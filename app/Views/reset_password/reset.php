@@ -14,57 +14,15 @@ $token = $token ?? '';
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .reset-container {
-            max-width: 600px;
-            margin: 5rem auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-        }
-        .reset-header {
-            background: #343a40;
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        .reset-body {
-            padding: 2rem;
-        }
-        .btn-primary {
-            background-color: #343a40;
-            border-color: #343a40;
-        }
-        .btn-primary:hover {
-            background-color: #23272b;
-            border-color: #23272b;
-        }
-        .password-toggle {
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 35px;
-            z-index: 10;
-        }
-        .form-floating {
-            margin-bottom: 1rem;
-        }
-        .error-text {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-    </style>
+   <style>
+        <?php include __DIR__ . '/../../../public/css/reset.css'; ?>
+    </style>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ 
 </head>
 <body>
     <div class="container">
         <div class="reset-container">
-            <div class="reset-header bg-primary text-white p-4">
+            <div class="reset-header text-white p-4">
                 <h2 class="mb-0"><i class="fas fa-key me-2"></i>Définir un nouveau mot de passe</h2>
             </div>
             <div class="reset-body p-4">
@@ -85,13 +43,13 @@ $token = $token ?? '';
                     <div class="alert alert-danger" role="alert">
                         <i class="fas fa-exclamation-triangle me-2"></i><?php echo htmlspecialchars($errors['token']); ?>
                         <div class="mt-3">
-                            <a href="/coud_bouletplate/reset-password" class="btn btn-outline-danger btn-sm">
+                            <a href="<?= BASE_URL ?>/reset-password" class="btn btn-outline-danger btn-sm">
                                 <i class="fas fa-sync me-1"></i> Demander un nouveau lien
                             </a>
                         </div>
                     </div>
                 <?php else: ?>
-                    <form method="POST" action="/coud_bouletplate/reset-password/reset/<?php echo htmlspecialchars($token); ?>" novalidate>
+                    <form method="POST" action="<?= BASE_URL ?>/reset-password/reset/<?php echo htmlspecialchars($token); ?>" novalidate>
                         <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
                         
                         <!-- Mot de passe -->
@@ -129,7 +87,7 @@ $token = $token ?? '';
                 <?php endif; ?>
                 
                 <div class="mt-4 text-center">
-                    <a href="/coud_bouletplate/login" class="btn btn-link text-muted">
+                    <a href="<?= BASE_URL ?>/login" class="btn btn-link text-muted">
                         <i class="fas fa-arrow-left me-1"></i> Retour à la connexion
                     </a>
                 </div>

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+require_once dirname(__DIR__) . '/config.php';
+
 /**
  * Service pour l'inscription des utilisateurs via l'API
  */
@@ -17,8 +19,8 @@ class RegisterService
      */
     public function __construct()
     {
-        // URL de l'API d'inscription avec BASE_URL
-        $this->apiUrl = 'http://localhost/gestion-pharmacie/api/auth/register';
+        // Utiliser la constante BASE_URL
+        $this->apiUrl = 'http://localhost' . BASE_URL . '/api/auth/register';
         
         // Journaliser pour le débogage
         error_log("RegisterService initialisé avec l'URL: " . $this->apiUrl);

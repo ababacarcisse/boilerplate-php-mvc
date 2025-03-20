@@ -5,14 +5,14 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Core\Router;
 use App\Controllers\HomeController;
 use App\Controllers\LoginController;
-use App\Controllers\RegisterController;
-use App\Controllers\Reset_PasswordController;
 use App\Controllers\EntresController;
 use App\Controllers\SortiesController;
 use App\Controllers\VentesController;
 use App\Controllers\StatistiquesController;
 use App\Controllers\UtilisateursController;
 use App\Controllers\VenteController;
+use App\Controllers\ResetPasswordController;
+use App\Controllers\RegisterController;
 // Afficher toutes les erreurs pour le débogage
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -63,10 +63,26 @@ $router->add('/api(/.*)?', function() {
     exit; // Arrêter l'exécution après le traitement de l'API
 });
 
+
 // Définir une route pour la page d'accueil qui utilise le HomeController
 $router->add('/', function() {
     $controller = new HomeController();
     $controller->index();
+});
+
+$router->add('/register', function() {
+    $controller = new RegisterController();
+    $controller->index();
+});
+
+$router->add('/reset-password', function() {
+    $controller = new ResetPasswordController();
+    $controller->index();
+});
+
+$router->add('/reset-password/reset/([^/]+)', function($params) {
+    $controller = new ResetPasswordController();
+    $controller->reset($params);
 });
 
 $router->add('/entres', function() {

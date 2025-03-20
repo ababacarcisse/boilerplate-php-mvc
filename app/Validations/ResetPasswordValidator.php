@@ -5,7 +5,7 @@ namespace App\Validations;
 /**
  * Validateur pour la réinitialisation de mot de passe
  */
-class Reset_passwordValidator
+class ResetPasswordValidator
 {
     /**
      * Valide les données de demande de réinitialisation
