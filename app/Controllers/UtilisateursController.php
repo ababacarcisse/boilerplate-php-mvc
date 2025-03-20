@@ -6,25 +6,25 @@ use Core\Controller;
 
 /**
  * Généré automatiquement par Coud le " . date('Y-m-d H:i') . "
- * Contrôleur: VentesController
+ * Contrôleur: UtilisateursController
  */
-class VentesController extends Controller
+class UtilisateursController extends Controller
 {
     /**
-     * Page d'accueil des ventes
+     * Page d'accueil
      */
     public function index()
     {
-        $this->render('ventes/index');
+        $this->render('utilisateurs/index');
     }
 
     /**
-     * Afficher le détail d'une vente
+     * Afficher un élément
      */
     public function show($id)
     {
-        // Logique pour récupérer et afficher une vente
-        $this->render('ventes/show', ['id' => $id]);
+        // Logique pour récupérer et afficher un élément
+        $this->render('utilisateurs/show', ['id' => $id]);
     }
 
     /**
@@ -32,7 +32,7 @@ class VentesController extends Controller
      */
     public function create()
     {
-        $this->render('ventes/create');
+        $this->render('utilisateurs/create');
     }
 
     /**
@@ -42,6 +42,6 @@ class VentesController extends Controller
     {
         // Logique pour traiter les données du formulaire et créer un nouvel élément
         // Redirection vers l'index après création
-        header('Location: /ventes');
+        header('Location: /utilisateurs');
     }
 }

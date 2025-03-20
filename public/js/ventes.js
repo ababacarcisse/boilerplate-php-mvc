@@ -40,15 +40,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const dateCell = cells[0].textContent; // Date de vente
             const rowDate = new Date(dateCell);
             const invoiceNumber = cells[1].textContent.toLowerCase(); // N° Facture
-            const client = cells[2].textContent.toLowerCase(); // Client
-            const products = cells[3].textContent.toLowerCase(); // Produits
-            const statusCell = cells[5].querySelector('.badge').textContent.toLowerCase(); // Statut
+            const studentCard = cells[2].textContent.toLowerCase(); // N° Carte COUD (au lieu de client)
+            const statusCell = cells[4].querySelector('.badge').textContent.toLowerCase(); // Statut (index ajusté)
             
             // Vérifier si la ligne correspond à tous les critères de filtrage
             const matchesSearch = !searchTerm || 
                 invoiceNumber.includes(searchTerm) || 
-                client.includes(searchTerm) || 
-                products.includes(searchTerm);
+                studentCard.includes(searchTerm);
                 
             const matchesStatus = !statusValue || 
                 statusCell.includes(statusValue);
@@ -148,117 +146,120 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fonction pour afficher les détails d'une vente
     function showSaleDetails(saleId) {
-        // Dans une application réelle, vous feriez une requête AJAX pour obtenir les détails
-        // Pour cet exemple, nous utilisons des données statiques
+        // Simulation de récupération des données du serveur
+        const saleData = {
+            id: saleId,
+            date: '2023-07-15',
+            invoice: 'FACT-2023-001',
+            // Informations étudiant
+            student_name: 'Moussa Diallo',
+            student_card: 'COUD-2023-1254',
+            student_faculty: 'Faculté de Médecine',
+            student_level: 'Licence 3',
+            // Autres informations
+            payment_method: 'Espèces',
+            status: 'paid',
+            remarks: 'Achat de médicaments pour besoin personnel',
+            items: [
+                { name: 'Amoxicilline 500mg', quantity: 50, unit_price: 500, total: 25000 },
+                { name: 'Paracétamol 1000mg', quantity: 100, unit_price: 300, total: 30000 },
+                { name: 'Oméprazole 20mg', quantity: 40, unit_price: 600, total: 24000 }
+            ],
+            total: 79000
+        };
         
-        // Exemple de données pour la vente avec l'ID 1
-        const detailsHTML = `
-            <div class="details-section">
-                <h5 class="mb-3">Informations générales</h5>
-                <div class="row mb-2">
-                    <div class="col-4 details-label">Date de vente:</div>
-                    <div class="col-8 details-value">2023-07-15</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 details-label">N° Facture:</div>
-                    <div class="col-8 details-value">FACT-2023-001</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 details-label">Client:</div>
-                    <div class="col-8 details-value">Hôpital Central</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 details-label">Mode de paiement:</div>
-                    <div class="col-8 details-value">Virement bancaire</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 details-label">Statut:</div>
-                    <div class="col-8 details-value"><span class="badge bg-success">Payée</span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 details-label">Remarques:</div>
-                    <div class="col-8 details-value">Commande urgente livrée le jour même</div>
+        // Construction du HTML pour les détails
+        let detailsHTML = `
+        <div class="details-section">
+            <h5 class="mb-3">Informations générales</h5>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Date de vente:</div>
+                <div class="col-8 details-value">${saleData.date}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 details-label">N° Facture:</div>
+                <div class="col-8 details-value">${saleData.invoice}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Mode de paiement:</div>
+                <div class="col-8 details-value">${saleData.payment_method}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Statut:</div>
+                <div class="col-8 details-value">
+                    <span class="badge ${saleData.status === 'paid' ? 'bg-success' : saleData.status === 'pending' ? 'bg-warning' : 'bg-danger'}">
+                        ${saleData.status === 'paid' ? 'Payée' : saleData.status === 'pending' ? 'En attente' : 'Annulée'}
+                    </span>
                 </div>
             </div>
-            
-            <div class="details-section">
-                <h5 class="mb-3">Produits vendus</h5>
-                <table class="table table-sm table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Produit</th>
-                            <th>Quantité</th>
-                            <th>Prix unitaire</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Amoxicilline 500mg</td>
-                            <td>50</td>
-                            <td>500 FCFA</td>
-                            <td>25,000 FCFA</td>
-                        </tr>
-                        <tr>
-                            <td>Paracétamol 1000mg</td>
-                            <td>100</td>
-                            <td>300 FCFA</td>
-                            <td>30,000 FCFA</td>
-                        </tr>
-                        <tr>
-                            <td>Oméprazole 20mg</td>
-                            <td>30</td>
-                            <td>800 FCFA</td>
-                            <td>24,000 FCFA</td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end fw-bold">Total:</td>
-                            <td class="fw-bold">79,000 FCFA</td>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Remarques:</div>
+                <div class="col-8 details-value">${saleData.remarks}</div>
             </div>
-            
-            <div class="details-section">
-                <h5 class="mb-3">Historique</h5>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-icon">
-                            <i class="bi bi-check-lg"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <div class="timeline-date">15 Juillet 2023, 09:30</div>
-                            <p class="mb-0">Vente enregistrée</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-icon">
-                            <i class="bi bi-truck"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <div class="timeline-date">15 Juillet 2023, 14:45</div>
-                            <p class="mb-0">Produits livrés au client</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-icon">
-                            <i class="bi bi-cash-coin"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <div class="timeline-date">18 Juillet 2023, 11:20</div>
-                            <p class="mb-0">Paiement reçu</p>
-                        </div>
-                    </div>
-                </div>
+        </div>
+
+        <div class="details-section">
+            <h5 class="mb-3">Informations Étudiant</h5>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Nom et Prénom:</div>
+                <div class="col-8 details-value">${saleData.student_name}</div>
             </div>
-        `;
+            <div class="row mb-2">
+                <div class="col-4 details-label">N° Carte COUD:</div>
+                <div class="col-8 details-value">${saleData.student_card}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Faculté:</div>
+                <div class="col-8 details-value">${saleData.student_faculty}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 details-label">Niveau d'étude:</div>
+                <div class="col-8 details-value">${saleData.student_level}</div>
+            </div>
+        </div>
+
+        <div class="details-section">
+            <h5 class="mb-3">Produits vendus</h5>
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>Prix unitaire</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>`;
         
+        // Ajouter les lignes de produits
+        saleData.items.forEach(item => {
+            detailsHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.unit_price.toLocaleString()} FCFA</td>
+                <td>${item.total.toLocaleString()} FCFA</td>
+            </tr>`;
+        });
+        
+        // Fermer le tableau et ajouter le total
+        detailsHTML += `
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Total:</th>
+                        <th>${saleData.total.toLocaleString()} FCFA</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>`;
+        
+        // Mise à jour du contenu du modal
         if (saleDetailsContent) {
             saleDetailsContent.innerHTML = detailsHTML;
         }
         
+        // Afficher le modal
         if (saleDetailsModal) {
             saleDetailsModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';

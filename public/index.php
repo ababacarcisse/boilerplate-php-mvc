@@ -1,5 +1,4 @@
 <?php
-var_dump("Démarrage de l'application"); // Point de débogage 1
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -11,6 +10,9 @@ use App\Controllers\Reset_PasswordController;
 use App\Controllers\EntresController;
 use App\Controllers\SortiesController;
 use App\Controllers\VentesController;
+use App\Controllers\StatistiquesController;
+use App\Controllers\UtilisateursController;
+use App\Controllers\VenteController;
 // Afficher toutes les erreurs pour le débogage
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -76,8 +78,20 @@ $router->add('/sorties', function() {
     $controller = new SortiesController();
     $controller->index();
 });
+$router->add('/vente', function() {
+    $controller = new VenteController();
+    $controller->index();
+});
  $router->add('/ventes', function() {
     $controller = new VentesController();
+    $controller->index();
+});
+$router->add('/statistiques', function() {
+    $controller = new StatistiquesController();
+    $controller->index();
+});
+$router->add('/utilisateurs', function() {
+    $controller = new UtilisateursController();
     $controller->index();
 });
 

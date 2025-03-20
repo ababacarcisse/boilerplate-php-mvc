@@ -1,0 +1,564 @@
+/* Styles pour Point de Vente */
+
+:root {
+    --primary-blue: #0056b3;
+    --light-blue: #e6f0ff;
+    --dark-blue: #003a75;
+    --primary-orange: #fd7e14;
+    --light-orange: #ffe5d0;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --medium-gray: #e9ecef;
+    --dark-gray: #343a40;
+    --text-gray: #6c757d;
+    --border-color: #dee2e6;
+    --success-green: #198754;
+    --warning-yellow: #ffc107;
+    --danger-red: #dc3545;
+}
+
+/* Page header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.page-header h1 {
+    color: var(--dark-blue);
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.page-header .actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* POS Container layout */
+.pos-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 200px);
+    min-height: 600px;
+}
+
+.pos-left-panel {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pos-right-panel {
+    flex: 2;
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Customer section */
+.customer-section {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.customer-section h2 {
+    color: var(--dark-blue);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.student-info-container {
+    background-color: var(--light-blue);
+    border-left: 4px solid var(--primary-blue);
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.student-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.student-info-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--dark-blue);
+}
+
+#studentFaculty {
+    font-size: 0.85rem;
+}
+
+#studentLevel {
+    margin: 0;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+/* Product search section */
+.product-search-section {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.product-search-section h2 {
+    color: var(--dark-blue);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-gray);
+}
+
+.input-with-icon input {
+    padding-left: 35px;
+}
+
+.search-results {
+    position: absolute;
+    width: 100%;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-results.show {
+    display: block;
+}
+
+.search-result-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: var(--light-blue);
+}
+
+.search-result-item .product-name {
+    font-weight: 500;
+    color: var(--dark-blue);
+}
+
+.search-result-item .product-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    margin-top: 3px;
+}
+
+/* Cart items section */
+.cart-items {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-items h2 {
+    color: var(--dark-blue);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.cart-items-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.empty-cart-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-gray);
+}
+
+.empty-cart-message i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.cart-item {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 0;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item-name {
+    font-weight: 500;
+    color: var(--dark-blue);
+    margin-bottom: 5px;
+}
+
+.cart-item-price {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.cart-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.quantity-btn {
+    background-color: var(--light-gray);
+    border: none;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-input {
+    width: 40px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    height: 30px;
+}
+
+.cart-item-total {
+    font-weight: 500;
+    min-width: 80px;
+    text-align: right;
+}
+
+.cart-item-remove {
+    color: var(--danger-red);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Order summary */
+.order-summary {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.order-summary h2 {
+    color: var(--dark-blue);
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.summary-line.total {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--dark-blue);
+    border-top: 1px solid var(--border-color);
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.payment-method {
+    margin-top: 30px;
+}
+
+.payment-method h3 {
+    font-size: 1.1rem;
+    color: var(--dark-blue);
+    margin-bottom: 15px;
+}
+
+.payment-options {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remarks-section {
+    margin-bottom: 30px;
+}
+
+.remarks-section label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dark-gray);
+}
+
+.remarks-section textarea {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+}
+
+.checkout-actions {
+    margin-top: auto;
+}
+
+#completeSaleBtn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+}
+
+/* Form controls */
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(0, 86, 179, 0.25);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dark-gray);
+}
+
+/* Modals */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-container {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 500px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.success-header {
+    background-color: var(--success-green);
+    color: white;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-gray);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Sale confirmation modal */
+.confirm-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.confirm-student {
+    background-color: var(--light-blue);
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.confirm-student h3 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--dark-blue);
+}
+
+.confirm-student p {
+    margin: 5px 0;
+    color: var(--text-gray);
+}
+
+.confirm-products {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.confirm-product-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.confirm-product-item:last-child {
+    border-bottom: none;
+}
+
+.confirm-product-name {
+    font-weight: 500;
+}
+
+.confirm-product-details {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.confirm-total {
+    background-color: var(--light-gray);
+    padding: 15px;
+    border-radius: 4px;
+}
+
+/* Success modal */
+.success-message {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.success-message p {
+    margin: 10px 0;
+}
+
+#invoiceNumber {
+    color: var(--primary-blue);
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+    .pos-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .pos-left-panel, .pos-right-panel {
+        width: 100%;
+    }
+    
+    .cart-items {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .page-header .actions {
+        width: 100%;
+    }
+    
+    .payment-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
