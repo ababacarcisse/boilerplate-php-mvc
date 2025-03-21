@@ -1,11 +1,33 @@
 <?php require_once __DIR__ . '/../../../app/config.php'; ?>
 <?php require_once __DIR__ . '/../../../app/helpers/AssetHelper.php'; ?>
+<?php require_once __DIR__ . '/../../../app/Lib/Auth.php'; ?>
+
+use App\Lib\Auth;
+
+// Vérifier l'authentification et les permissions
+$auth = Auth::getInstance();
+
+if (!$auth->isAuthenticated()) {
+    header('Location: ' . BASE_URL . '/login');
+    exit;
+}
+
+// Vérifier la permission d'accès aux sorties
+if (!$auth->hasPermission('outputs')) {
+    header('Location: ' . BASE_URL . '/unauthorized');
+    exit;
+}
+
+// Récupérer le contexte (pharmacie ou magasin)
+$stockContext = $auth->getStockContext();
+$isAdmin = $auth->hasRole('admin');
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorties de Stock - StockSanté</title>
+    <title>Gestion des Sorties - <?= ucfirst($stockContext) ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -21,234 +43,156 @@
     <?php include __DIR__ . '/../components/header.php'; ?>
 
     <!-- Main Content -->
-    <div class="container-fluid">
+    <main class="container-fluid">
         <div class="row">
-            <!-- Main Content -->
             <div class="col main-content">
-                <div class="d-flex justify-content-between align-items-center my-4">
-                    <h2>Sorties de Stock</h2>
-                    <button class="btn btn-primary" id="openStockOutputModal">
-                        <i class="bi bi-plus-circle me-2"></i>Ajouter une nouvelle sortie
+                <div class="page-header">
+                    <h1>Gestion des Sorties - <?= ucfirst($stockContext) ?></h1>
+                    <?php if ($isAdmin): ?>
+                    <button id="addOutputBtn" class="btn btn-primary">
+                        <i class="bi bi-plus-circle-fill"></i> Nouvelle sortie
+                    </button>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Filtres -->
+                <div class="filters-container">
+                    <div class="search-container">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" id="searchOutput" class="search-input" placeholder="Rechercher une sortie...">
+                    </div>
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label for="dateFilter">Date:</label>
+                            <input type="date" id="dateFilter" class="filter-input">
+                        </div>
+                        <div class="filter-group">
+                            <label for="statusFilter">Statut:</label>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                                <option value="pending">En attente</option>
+                                <option value="completed">Complété</option>
+                                <option value="cancelled">Annulé</option>
+                            </select>
+                        </div>
+                        <?php if ($auth->isPharmacy()): ?>
+                        <div class="filter-group">
+                            <label for="typeFilter">Type:</label>
+                            <select id="typeFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                                <option value="sale">Vente</option>
+                                <option value="transfer">Transfert</option>
+                                <option value="loss">Perte</option>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Tableau des sorties -->
+                <div class="table-responsive">
+                    <table id="outputsTable" class="outputs-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="date">Date <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="reference">Référence <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="product">Produit <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="quantity">Quantité <i class="bi bi-arrow-down-up"></i></th>
+                                <?php if ($auth->isPharmacy()): ?>
+                                <th class="sortable" data-sort="type">Type <i class="bi bi-arrow-down-up"></i></th>
+                                <?php endif; ?>
+                                <th class="sortable" data-sort="status">Statut <i class="bi bi-arrow-down-up"></i></th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les données seront chargées dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <button id="prevPage" class="pagination-btn">
+                        <i class="bi bi-chevron-left"></i> Précédent
+                    </button>
+                    <div class="pagination-info">
+                        Page <span id="currentPage">1</span> sur <span id="totalPages">1</span>
+                    </div>
+                    <button id="nextPage" class="pagination-btn">
+                        Suivant <i class="bi bi-chevron-right"></i>
                     </button>
                 </div>
-                
-                <!-- Search and Filter -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row g-3 align-items-center">
-                            <div class="col-md-3">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select" id="typeFilter">
-                                    <option value="">Tous les types</option>
-                                    <option value="general">Sortie générale</option>
-                                    <option value="internal">Sortie interne</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Du</span>
-                                    <input type="date" class="form-control" id="startDate">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Au</span>
-                                    <input type="date" class="form-control" id="endDate">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Onglets pour les différents types de sorties -->
-                <ul class="nav nav-tabs mb-4" id="outputTypesTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="all-outputs-tab" data-bs-toggle="tab" data-bs-target="#all-outputs" type="button" role="tab" aria-controls="all-outputs" aria-selected="true">Toutes les sorties</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="general-outputs-tab" data-bs-toggle="tab" data-bs-target="#general-outputs" type="button" role="tab" aria-controls="general-outputs" aria-selected="false">Sorties générales</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="internal-outputs-tab" data-bs-toggle="tab" data-bs-target="#internal-outputs" type="button" role="tab" aria-controls="internal-outputs" aria-selected="false">Sorties internes</button>
-                    </li>
-                </ul>
-                
-                <!-- Contenu des onglets -->
-                <div class="tab-content" id="outputTypesContent">
-                    <!-- Toutes les sorties -->
-                    <div class="tab-pane fade show active" id="all-outputs" role="tabpanel" aria-labelledby="all-outputs-tab">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover" id="outputsTable">
-                                        <thead>
-                                            <tr>
-                                                <th class="sortable" data-sort="date">Date de sortie <i class="bi bi-arrow-down-up"></i></th>
-                                                <th class="sortable" data-sort="type">Type <i class="bi bi-arrow-down-up"></i></th>
-                                                <th class="sortable" data-sort="designation">Désignation <i class="bi bi-arrow-down-up"></i></th>
-                                                <th class="sortable" data-sort="quantity">Quantité <i class="bi bi-arrow-down-up"></i></th>
-                                                <th class="sortable" data-sort="destination">Destination/Service <i class="bi bi-arrow-down-up"></i></th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Exemple de données pour les sorties générales -->
-                                            <tr data-type="general">
-                                                <td>2023-07-15</td>
-                                                <td><span class="badge bg-info">Générale</span></td>
-                                                <td>Amoxicilline 500mg</td>
-                                                <td>20</td>
-                                                <td>Hôpital central</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-primary view-output" data-id="1" data-type="general"><i class="bi bi-eye"></i></button>
-                                                        <button class="btn btn-outline-danger delete-output" data-id="1" data-type="general"><i class="bi bi-trash"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <!-- Exemple de données pour les sorties internes -->
-                                            <tr data-type="internal">
-                                                <td>2023-07-18</td>
-                                                <td><span class="badge bg-warning">Interne</span></td>
-                                                <td>Paracétamol 1000mg</td>
-                                                <td>50</td>
-                                                <td>Service Urgences</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-primary view-output" data-id="2" data-type="internal"><i class="bi bi-eye"></i></button>
-                                                        <button class="btn btn-outline-danger delete-output" data-id="2" data-type="internal"><i class="bi bi-trash"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr data-type="general">
-                                                <td>2023-07-20</td>
-                                                <td><span class="badge bg-info">Générale</span></td>
-                                                <td>Ibuprofène 400mg</td>
-                                                <td>30</td>
-                                                <td>Clinique Saint-Jean</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-primary view-output" data-id="3" data-type="general"><i class="bi bi-eye"></i></button>
-                                                        <button class="btn btn-outline-danger delete-output" data-id="3" data-type="general"><i class="bi bi-trash"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr data-type="internal">
-                                                <td>2023-07-25</td>
-                                                <td><span class="badge bg-warning">Interne</span></td>
-                                                <td>Métronidazole 500mg</td>
-                                                <td>25</td>
-                                                <td>Service Pédiatrie</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-primary view-output" data-id="4" data-type="internal"><i class="bi bi-eye"></i></button>
-                                                        <button class="btn btn-outline-danger delete-output" data-id="4" data-type="internal"><i class="bi bi-trash"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr data-type="internal">
-                                                <td>2023-07-28</td>
-                                                <td><span class="badge bg-warning">Interne</span></td>
-                                                <td>Oméprazole 20mg</td>
-                                                <td>15</td>
-                                                <td>Service Gériatrie</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-primary view-output" data-id="5" data-type="internal"><i class="bi bi-eye"></i></button>
-                                                        <button class="btn btn-outline-danger delete-output" data-id="5" data-type="internal"><i class="bi bi-trash"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                
-                                <!-- Pagination -->
-                                <nav aria-label="Page navigation" class="mt-4">
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                                        </li>
-                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">Suivant</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Sorties générales -->
-                    <div class="tab-pane fade" id="general-outputs" role="tabpanel" aria-labelledby="general-outputs-tab">
-                        <!-- Contenu similaire mais filtré pour les sorties générales -->
-                    </div>
-                    
-                    <!-- Sorties internes -->
-                    <div class="tab-pane fade" id="internal-outputs" role="tabpanel" aria-labelledby="internal-outputs-tab">
-                        <!-- Contenu similaire mais filtré pour les sorties internes -->
-                    </div>
-                </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Footer -->
-    <?php include __DIR__ . '/../components/footer.php'; ?>
-    
-    <!-- Modal pour la sortie de stock -->
-    <?php include __DIR__ . '/../components/Dashboard/stock_output_popup.php'; ?>
-    
-    <!-- Modal de détails de sortie -->
-    <div class="modal-overlay" id="outputDetailsModal">
+    <!-- Modal d'ajout/modification de sortie -->
+    <?php if ($isAdmin): ?>
+    <div class="modal-overlay" id="outputModal">
         <div class="modal-container">
             <div class="modal-header">
-                <h5 id="detailsModalTitle">Détails de la Sortie</h5>
-                <button class="close-modal" id="closeOutputDetailsModal">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="outputDetailsContent">
-                <!-- Le contenu sera rempli dynamiquement par JavaScript -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="closeDetailsBtn">Fermer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmation de suppression -->
-    <div class="modal-overlay" id="deleteOutputConfirmModal">
-        <div class="modal-container" style="max-width: 400px;">
-            <div class="modal-header bg-danger text-white">
-                <h5>Confirmer la suppression</h5>
-                <button class="close-modal" id="closeDeleteOutputConfirmModal">
+                <h2 id="modalTitle">Nouvelle sortie</h2>
+                <button class="close-modal" id="closeOutputModal">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer cette sortie de stock?</p>
-                <p class="text-danger"><small>Cette action est irréversible.</small></p>
+                <form id="outputForm">
+                    <div class="form-group">
+                        <label for="reference">Référence <span class="required">*</span></label>
+                        <input type="text" id="reference" name="reference" class="form-control" required>
+                        <div class="error-message" id="referenceError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product">Produit <span class="required">*</span></label>
+                        <select id="product" name="product" class="form-control" required>
+                            <option value="">-- Sélectionner un produit --</option>
+                            <!-- Les produits seront chargés dynamiquement -->
+                        </select>
+                        <div class="error-message" id="productError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantité <span class="required">*</span></label>
+                        <input type="number" id="quantity" name="quantity" class="form-control" min="1" required>
+                        <div class="error-message" id="quantityError"></div>
+                    </div>
+                    <?php if ($auth->isPharmacy()): ?>
+                    <div class="form-group">
+                        <label for="type">Type de sortie <span class="required">*</span></label>
+                        <select id="type" name="type" class="form-control" required>
+                            <option value="">-- Sélectionner un type --</option>
+                            <option value="sale">Vente</option>
+                            <option value="transfer">Transfert</option>
+                            <option value="loss">Perte</option>
+                        </select>
+                        <div class="error-message" id="typeError"></div>
+                    </div>
+                    <?php endif; ?>
+                    <div class="form-group">
+                        <label for="date">Date <span class="required">*</span></label>
+                        <input type="date" id="date" name="date" class="form-control" required>
+                        <div class="error-message" id="dateError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelOutputDelete">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmOutputDelete">Supprimer</button>
+                <button type="button" class="btn btn-secondary" id="cancelOutputForm">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveOutput">Enregistrer</button>
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <?php include __DIR__ . '/../components/footer.php'; ?>
+    
     <!-- Custom JS -->
     <script>
-        <?php include __DIR__ . '/../../../public/js/dashboard.js'; ?>
         <?php include __DIR__ . '/../../../public/js/sorties.js'; ?>
     </script>
 </body>

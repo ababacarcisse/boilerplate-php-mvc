@@ -1,11 +1,33 @@
-<?php require_once __DIR__ . '/../../../app/config.php'; ?>
-<?php require_once __DIR__ . '/../../../app/helpers/AssetHelper.php'; ?>
+<?php
+require_once __DIR__ . '/../../../app/config.php';
+require_once __DIR__ . '/../../../app/Lib/Auth.php';
+
+use App\Lib\Auth;
+
+// Vérifier l'authentification et les permissions
+$auth = Auth::getInstance();
+
+if (!$auth->isAuthenticated()) {
+    header('Location: ' . BASE_URL . '/login');
+    exit;
+}
+
+// Vérifier la permission d'accès aux entrées
+if (!$auth->hasPermission('entries')) {
+    header('Location: ' . BASE_URL . '/unauthorized');
+    exit;
+}
+
+// Récupérer le contexte (pharmacie ou magasin)
+$stockContext = $auth->getStockContext();
+$isAdmin = $auth->hasRole('admin');
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrées de Stock - StockSanté</title>
+    <title>Gestion des Entrées - <?= ucfirst($stockContext) ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -17,225 +39,134 @@
     </style>
 </head>
 <body>
-    <!-- Correction du chemin vers le header -->
+    <!-- Header -->
     <?php include __DIR__ . '/../components/header.php'; ?>
 
     <!-- Main Content -->
-    <div class="container-fluid">
+    <main class="container-fluid">
         <div class="row">
-            <!-- Main Content -->
             <div class="col main-content">
-                <div class="d-flex justify-content-between align-items-center my-4">
-                    <h2>Entrées de Stock</h2>
-                    <button class="btn btn-primary" id="openStockEntryModal">
-                        <i class="bi bi-plus-circle me-2"></i>Ajouter une nouvelle entrée
+                <div class="page-header">
+                    <h1>Gestion des Entrées - <?= ucfirst($stockContext) ?></h1>
+                    <?php if ($isAdmin): ?>
+                    <button id="addEntryBtn" class="btn btn-primary">
+                        <i class="bi bi-plus-circle-fill"></i> Nouvelle entrée
                     </button>
+                    <?php endif; ?>
                 </div>
-                
-                <!-- Search and Filter -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row g-3 align-items-center">
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher...">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select" id="categoryFilter">
-                                    <option value="">Toutes les catégories</option>
-                                    <option value="antibiotiques">Antibiotiques</option>
-                                    <option value="antalgiques">Antalgiques</option>
-                                    <option value="antiinflammatoires">Anti-inflammatoires</option>
-                                    <option value="vitamines">Vitamines</option>
-                                    <option value="autres">Autres</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">Du</span>
-                                    <input type="date" class="form-control" id="startDate">
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="input-group">
-                                    <span class="input-group-text">Au</span>
-                                    <input type="date" class="form-control" id="endDate">
-                                </div>
-                            </div>
+
+                <!-- Filtres -->
+                <div class="filters-container">
+                    <div class="search-container">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" id="searchEntry" class="search-input" placeholder="Rechercher une entrée...">
+                    </div>
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label for="dateFilter">Date:</label>
+                            <input type="date" id="dateFilter" class="filter-input">
+                        </div>
+                        <div class="filter-group">
+                            <label for="statusFilter">Statut:</label>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                                <option value="pending">En attente</option>
+                                <option value="completed">Complété</option>
+                                <option value="cancelled">Annulé</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Stock Entries Table -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="entriesTable">
-                                <thead>
-                                    <tr>
-                                        <th class="sortable" data-sort="date">Date d'entrée <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="designation">Désignation <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="quantity">Quantité <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="unitPrice">Prix unitaire <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="totalPrice">Prix total <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="supplier">Fournisseur <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="invoice">N° Facture <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="deliveryNote">N° BL/Facture <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="category">Catégorie <i class="bi bi-arrow-down-up"></i></th>
-                                        <th class="sortable" data-sort="expiry">Date de péremption <i class="bi bi-arrow-down-up"></i></th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Exemple de données -->
-                                    <tr>
-                                        <td>2023-06-15</td>
-                                        <td>Amoxicilline 500mg</td>
-                                        <td>100</td>
-                                        <td>5.50 FCFA</td>
-                                        <td>550.00 FCFA</td>
-                                        <td>Pharmex SA</td>
-                                        <td>F2023-0654</td>
-                                        <td>BL-2023-087</td>
-                                        <td>Antibiotiques</td>
-                                        <td>2025-06-15</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary edit-entry" data-id="1"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-outline-danger delete-entry" data-id="1"><i class="bi bi-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2023-06-20</td>
-                                        <td>Paracétamol 1000mg</td>
-                                        <td>200</td>
-                                        <td>3.25 FCFA</td>
-                                        <td>650.00 FCFA</td>
-                                        <td>MédiSup Distribution</td>
-                                        <td>F2023-0728</td>
-                                        <td>BL-2023-102</td>
-                                        <td>Antalgiques</td>
-                                        <td>2025-12-20</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary edit-entry" data-id="2"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-outline-danger delete-entry" data-id="2"><i class="bi bi-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2023-06-28</td>
-                                        <td>Ibuprofène 400mg</td>
-                                        <td>150</td>
-                                        <td>4.75 FCFA</td>
-                                        <td>712.50 FCFA</td>
-                                        <td>Pharmex SA</td>
-                                        <td>F2023-0801</td>
-                                        <td>BL-2023-115</td>
-                                        <td>Anti-inflammatoires</td>
-                                        <td>2026-01-28</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary edit-entry" data-id="3"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-outline-danger delete-entry" data-id="3"><i class="bi bi-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2023-07-05</td>
-                                        <td>Oméprazole 20mg</td>
-                                        <td>80</td>
-                                        <td>6.50 FCFA</td>
-                                        <td>520.00 FCFA</td>
-                                        <td>MédiSup Distribution</td>
-                                        <td>F2023-0845</td>
-                                        <td>BL-2023-122</td>
-                                        <td>Anti-ulcéreux</td>
-                                        <td>2026-03-05</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary edit-entry" data-id="4"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-outline-danger delete-entry" data-id="4"><i class="bi bi-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2023-07-10</td>
-                                        <td>Metformine 850mg</td>
-                                        <td>120</td>
-                                        <td>4.25 FCFA</td>
-                                        <td>510.00 FCFA</td>
-                                        <td>SantéPharm</td>
-                                        <td>F2023-0872</td>
-                                        <td>BL-2023-130</td>
-                                        <td>Antidiabétiques</td>
-                                        <td>2026-05-10</td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary edit-entry" data-id="5"><i class="bi bi-pencil"></i></button>
-                                                <button class="btn btn-outline-danger delete-entry" data-id="5"><i class="bi bi-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <!-- Ajouter plus de lignes d'exemple ici si nécessaire -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <nav aria-label="Page navigation" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Suivant</a>
-                                </li>
-                            </ul>
-                        </nav>
+
+                <!-- Tableau des entrées -->
+                <div class="table-responsive">
+                    <table id="entriesTable" class="entries-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="date">Date <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="reference">Référence <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="product">Produit <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="quantity">Quantité <i class="bi bi-arrow-down-up"></i></th>
+                                <th class="sortable" data-sort="status">Statut <i class="bi bi-arrow-down-up"></i></th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les données seront chargées dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <button id="prevPage" class="pagination-btn">
+                        <i class="bi bi-chevron-left"></i> Précédent
+                    </button>
+                    <div class="pagination-info">
+                        Page <span id="currentPage">1</span> sur <span id="totalPages">1</span>
                     </div>
+                    <button id="nextPage" class="pagination-btn">
+                        Suivant <i class="bi bi-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Correction du chemin vers le footer -->
-    <?php include __DIR__ . '/../components/footer.php'; ?>
-    
-    <!-- Correction du chemin vers le popup -->
-    <?php include __DIR__ . '/../components/Dashboard/stock_entry_popup.php'; ?>
-
-    <!-- Modal de confirmation de suppression -->
-    <div class="modal-overlay" id="deleteConfirmModal">
-        <div class="modal-container" style="max-width: 400px;">
-            <div class="modal-header bg-danger text-white">
-                <h5>Confirmer la suppression</h5>
-                <button class="close-modal" id="closeDeleteConfirmModal">
+    <!-- Modal d'ajout/modification d'entrée -->
+    <?php if ($isAdmin): ?>
+    <div class="modal-overlay" id="entryModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nouvelle entrée</h2>
+                <button class="close-modal" id="closeEntryModal">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer cette entrée de stock?</p>
-                <p class="text-danger"><small>Cette action est irréversible.</small></p>
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label for="reference">Référence <span class="required">*</span></label>
+                        <input type="text" id="reference" name="reference" class="form-control" required>
+                        <div class="error-message" id="referenceError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product">Produit <span class="required">*</span></label>
+                        <select id="product" name="product" class="form-control" required>
+                            <option value="">-- Sélectionner un produit --</option>
+                            <!-- Les produits seront chargés dynamiquement -->
+                        </select>
+                        <div class="error-message" id="productError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantité <span class="required">*</span></label>
+                        <input type="number" id="quantity" name="quantity" class="form-control" min="1" required>
+                        <div class="error-message" id="quantityError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date <span class="required">*</span></label>
+                        <input type="date" id="date" name="date" class="form-control" required>
+                        <div class="error-message" id="dateError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelDelete">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+                <button type="button" class="btn btn-secondary" id="cancelEntryForm">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveEntry">Enregistrer</button>
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <?php include __DIR__ . '/../components/footer.php'; ?>
+    
     <!-- Custom JS -->
     <script>
-        <?php include __DIR__ . '/../../../public/js/dashboard.js'; ?>
         <?php include __DIR__ . '/../../../public/js/entres.js'; ?>
     </script>
 </body>
