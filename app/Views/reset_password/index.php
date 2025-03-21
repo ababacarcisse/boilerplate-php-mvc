@@ -41,7 +41,7 @@ $old = $old ?? [];
                     </div>
                 <?php endif; ?>
                 
-                <form method="POST" action="/coud_bouletplate/reset-password" novalidate>
+                <form method="POST" action="/gestion-pharmacie/reset-password" novalidate>
                     <!-- Email -->
                     <div class="form-floating mb-3">
                         <input type="email" class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" 

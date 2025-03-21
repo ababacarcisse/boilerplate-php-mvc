@@ -53,7 +53,7 @@ class ApiRouter {
         error_log("Starting dispatch of URI: $uri with method: $method");
         
         // Supprimer le sous-répertoire du chemin si présent
-        $base_path = '/coud_bouletplate';
+        $base_path = '/gestion-pharmacie';
         if (strpos($uri, $base_path) === 0) {
             $uri = substr($uri, strlen($base_path));
             error_log("Removed base path, new URI: $uri");

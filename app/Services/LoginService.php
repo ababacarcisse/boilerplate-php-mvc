@@ -28,11 +28,9 @@ class LoginService
             EnvLoader::load($envFile);
         }
         
-        // Utiliser la constante BASE_URL
+        // Correction de l'URL de l'API en utilisant BASE_URL
         $this->apiUrl = 'http://localhost' . BASE_URL . '/api/auth/login';
-        
-        // Log pour le débogage
-        error_log("LoginService initialisé avec l'URL API: " . $this->apiUrl);
+        error_log("URL de l'API de login: " . $this->apiUrl); // Pour le débogage
     }
     
     /**

@@ -14,18 +14,49 @@ $token = $token ?? '';
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-   <style>
-        <?php include __DIR__ . '/../../../public/css/reset.css'; ?>
-    </style>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .reset-container {
+            max-width: 600px;
+            margin: 5rem auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .reset-header {
+            background: #0d6efd;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .reset-body {
+            padding: 2rem;
+        }
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            z-index: 10;
+        }
+        .error-text {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="reset-container">
-            <div class="reset-header text-white p-4">
+            <div class="reset-header">
                 <h2 class="mb-0"><i class="fas fa-key me-2"></i>Définir un nouveau mot de passe</h2>
             </div>
-            <div class="reset-body p-4">
+            <div class="reset-body">
                 <?php if (isset($_SESSION['success_message'])): ?>
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($_SESSION['success_message']); ?>

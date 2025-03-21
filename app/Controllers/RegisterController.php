@@ -179,13 +179,13 @@ class RegisterController extends Controller
      * 
      * @param string $url URL de destination
      */
-    private function redirectTo(string $url): void
+    protected function redirectTo(string $url): void
     {
-        // Préfixer l'URL avec le sous-répertoire si ce n'est pas déjà le cas
-        if (strpos($url, '/coud_bouletplate') !== 0 && $url !== '/') {
-            $url = '/coud_bouletplate' . $url;
+        // Utiliser la constante BASE_URL
+        if (strpos($url, BASE_URL) !== 0 && $url !== '/') {
+            $url = BASE_URL . $url;
         } else if ($url === '/') {
-            $url = '/coud_bouletplate/';
+            $url = BASE_URL . '/';
         }
         
         header('Location: ' . $url);

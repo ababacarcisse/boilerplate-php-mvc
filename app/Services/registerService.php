@@ -26,7 +26,7 @@ class RegisterService
         }
         
         // URL de l'API d'inscription
-        $this->apiUrl = 'http://localhost/coud_bouletplate/api/auth/register';
+        $this->apiUrl = 'http://localhost/gestion-pharmacie/api/auth/register';
         
         // Log pour le débogage
         error_log("RegisterService initialisé avec l'URL API: " . $this->apiUrl);

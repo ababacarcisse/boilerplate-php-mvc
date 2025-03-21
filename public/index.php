@@ -80,9 +80,12 @@ $router->add('/reset-password', function() {
     $controller->index();
 });
 
-$router->add('/reset-password/reset/([^/]+)', function($params) {
+$router->add('/reset-password/reset/([a-zA-Z0-9.]+)', function() use ($router) {
+    $matches = [];
+    preg_match('/reset-password\/reset\/([a-zA-Z0-9.]+)/', $_SERVER['REQUEST_URI'], $matches);
+    $token = $matches[1] ?? '';
     $controller = new ResetPasswordController();
-    $controller->reset($params);
+    $controller->reset([$token]);
 });
 
 $router->add('/entres', function() {
@@ -110,10 +113,25 @@ $router->add('/utilisateurs', function() {
     $controller = new UtilisateursController();
     $controller->index();
 });
+ 
+// Routes d'authentification
+$router->add('/login', function() {
+    $controller = new LoginController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } else {
+        $controller->processLogin();
+    }
+}, 'GET|POST');
 
-// Utiliser la nouvelle méthode resource pour ajouter les routes des contrôleurs
-$router->resource('/login', \App\Controllers\LoginController::class);
-  
+$router->add('/login/logout', function() {
+    $controller = new LoginController();
+    $controller->logout();
+});
+
+// Route API pour l'authentification (déjà gérée par le middleware API)
+// Pas besoin de définir /api/auth/login ici car c'est géré par la route API générique
+
 // Dispatcher la requête actuelle
 $uri = $_SERVER['REQUEST_URI'];
 $router->dispatch($uri);

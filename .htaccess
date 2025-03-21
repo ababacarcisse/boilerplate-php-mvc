@@ -3,9 +3,9 @@ RewriteEngine On
 
 # Activer le mode de réécriture
 <IfModule mod_rewrite.c>
-    # Redirection des requêtes API spécifiquement vers le point d'entrée de l'API
-    RewriteCond %{REQUEST_URI} ^/gestion-pharmacie/api [NC]
-    RewriteRule ^api/(.*)$ app/api/index.php [QSA,L]
+    # Redirection des requêtes API vers le point d'entrée de l'API
+    RewriteCond %{REQUEST_URI} ^/gestion-pharmacie/api/ [NC]
+    RewriteRule ^gestion-pharmacie/api/(.*)$ app/api/index.php [QSA,L]
 
     # Si le fichier ou le répertoire n'existe pas, rediriger vers index.php
     RewriteCond %{REQUEST_FILENAME} !-f

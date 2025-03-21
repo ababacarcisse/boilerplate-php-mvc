@@ -30,4 +30,22 @@ abstract class Controller
         extract($data); // Extrait les données pour les rendre accessibles dans la vue
         require $viewPath; // Inclut le fichier de vue
     }
+
+    /**
+     * Redirige vers une URL
+     * 
+     * @param string $url URL de destination
+     */
+    protected function redirectTo(string $url): void
+    {
+        // S'assurer que config.php est chargé
+        require_once __DIR__ . '/../app/config.php';
+        
+        // Ajouter BASE_URL au début de l'URL
+        $url = BASE_URL . $url;
+        
+        // Effectuer la redirection
+        header('Location: ' . $url);
+        exit;
+    }
 }

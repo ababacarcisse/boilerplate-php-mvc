@@ -666,7 +666,7 @@ class AuthService
             ]);
             
             // Construire l'URL de réinitialisation avec le sous-domaine approprié
-            $domaine = getenv('DOMAINE') ?: 'http://localhost/coud_bouletplate';
+            $domaine = getenv('DOMAINE') ?: 'http://localhost/gestion-pharmacie';
             $resetUrl = $domaine . '/reset-password/reset/' . $selector . '.' . $validator;
             
             // Journaliser l'URL de réinitialisation en développement

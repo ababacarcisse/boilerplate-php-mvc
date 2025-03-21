@@ -769,7 +769,7 @@ XMODIFIERS => @im=ibus
 DESKTOP_SESSION => pantheon
 LC_MONETARY => fr_FR.UTF-8
 GTK_MODULES => gail:atk-bridge
-PWD => /opt/lampp/htdocs/coud_bouletplate
+PWD => /opt/lampp/htdocs/gestion-pharmacie
 GSETTINGS_SCHEMA_DIR => /tmp/.mount_cursorpAVb4D/usr/share/glib-2.0/schemas:
 LOGNAME => ababacarcisse
 XDG_SESSION_DESKTOP => pantheon
@@ -861,7 +861,7 @@ $_SERVER['XMODIFIERS'] => @im=ibus
 $_SERVER['DESKTOP_SESSION'] => pantheon
 $_SERVER['LC_MONETARY'] => fr_FR.UTF-8
 $_SERVER['GTK_MODULES'] => gail:atk-bridge
-$_SERVER['PWD'] => /opt/lampp/htdocs/coud_bouletplate
+$_SERVER['PWD'] => /opt/lampp/htdocs/gestion-pharmacie
 $_SERVER['GSETTINGS_SCHEMA_DIR'] => /tmp/.mount_cursorpAVb4D/usr/share/glib-2.0/schemas:
 $_SERVER['LOGNAME'] => ababacarcisse
 $_SERVER['XDG_SESSION_DESKTOP'] => pantheon

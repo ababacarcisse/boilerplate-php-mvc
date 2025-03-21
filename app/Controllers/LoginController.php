@@ -51,13 +51,13 @@ class LoginController extends Controller
             // Initialiser le service de login
             $this->loginService = new LoginService();
             
-            // Utiliser la constante BASE_URL pour la vérification
+            // Vérification de la route de déconnexion
             if ($this->loginService->isLoggedIn() && 
-                strpos($_SERVER['REQUEST_URI'], BASE_URL . '/login/logout') === false) {
-                $this->redirectTo(BASE_URL . '/');
+                $_SERVER['REQUEST_URI'] !== BASE_URL . '/login/logout') {
+                $this->redirectTo('/');
             }
         } catch (\Exception $e) {
-            error_log("Erreur d'initialisation des dépendances: " . $e->getMessage());
+            error_log("Erreur d'initialisation: " . $e->getMessage());
         }
     }
 
@@ -83,9 +83,8 @@ class LoginController extends Controller
     /**
      * Traiter le formulaire de connexion
      */
-    private function processLogin()
+    public function processLogin()
     {
-        // Récupérer les données du formulaire
         $data = [
             'matricule' => $_POST['matricule'] ?? '',
             'password' => $_POST['password'] ?? ''
@@ -94,53 +93,44 @@ class LoginController extends Controller
         // Valider les données
         $validationResult = $this->validator->validate($data);
         
-        // Si la validation échoue, afficher le formulaire avec les erreurs
         if ($validationResult !== true) {
             return $this->render('login/index', [
                 'title' => 'Connexion',
                 'errors' => $validationResult,
-                'old' => $data
+                'old' => $data,
+                'BASE_URL' => BASE_URL
             ]);
         }
         
         try {
-            // Tenter de connecter l'utilisateur
             $loginResult = $this->loginService->login($data['matricule'], $data['password']);
             
-            // Si la connexion échoue, afficher les erreurs
             if (!$loginResult['success']) {
-                $errorMessage = $loginResult['message'] ?? 'Identifiants invalides';
-                
-                // En mode développement, afficher plus de détails pour le débogage
-                if (isset($loginResult['httpCode']) || isset($loginResult['response'])) {
-                    $errorMessage .= ' (Code: ' . ($loginResult['httpCode'] ?? 'inconnu');
-                    
-                    if (isset($loginResult['response']) && !empty($loginResult['response'])) {
-                        $errorMessage .= ', Réponse: ' . substr($loginResult['response'], 0, 100) . '...)';
-                    } else {
-                        $errorMessage .= ', Pas de réponse)';
-                    }
-                }
-                
+                // Afficher le message d'erreur
                 return $this->render('login/index', [
                     'title' => 'Connexion',
-                    'errors' => ['auth' => $errorMessage],
-                    'old' => $data
+                    'errors' => ['auth' => $loginResult['message'] ?? 'Identifiants invalides'],
+                    'old' => $data,
+                    'BASE_URL' => BASE_URL
                 ]);
             }
             
-            // Rediriger vers la page d'accueil après connexion réussie
+            // Connexion réussie
+            $_SESSION['flash_message'] = [
+                'type' => 'success',
+                'message' => 'Connexion réussie! Redirection...'
+            ];
+            
+            // Rediriger vers la page d'accueil
             $this->redirectTo('/');
             
         } catch (\Exception $e) {
-            // Journaliser l'erreur
-            $this->errorHandler->logError($e->getMessage(), 'login');
-            
-            // Afficher une erreur générique
+            error_log("Erreur de connexion: " . $e->getMessage());
             return $this->render('login/index', [
                 'title' => 'Connexion',
                 'errors' => ['auth' => 'Une erreur est survenue lors de la tentative de connexion'],
-                'old' => $data
+                'old' => $data,
+                'BASE_URL' => BASE_URL
             ]);
         }
     }
@@ -185,7 +175,7 @@ class LoginController extends Controller
      * 
      * @param string $url URL de destination
      */
-    private function redirectTo($url): void
+    protected function redirectTo($url): void
     {
         // Utiliser la constante BASE_URL
         if (strpos($url, BASE_URL) !== 0 && $url !== '/') {

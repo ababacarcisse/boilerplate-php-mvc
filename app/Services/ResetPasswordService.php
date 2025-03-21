@@ -24,8 +24,8 @@ class ResetPasswordService
      */
     public function __construct()
     {
-        // Utiliser la constante BASE_URL
-        $this->requestResetApiUrl = 'http://localhost' . BASE_URL . '/api/auth/request-reset';
+        // Utiliser la constante BASE_URL avec les bonnes routes
+        $this->requestResetApiUrl = 'http://localhost' . BASE_URL . '/api/auth/forgot-password';
         $this->resetPasswordApiUrl = 'http://localhost' . BASE_URL . '/api/auth/reset-password';
         
         // Journaliser pour le débogage

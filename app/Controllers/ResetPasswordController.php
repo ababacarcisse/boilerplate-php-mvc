@@ -240,22 +240,4 @@ class ResetPasswordController extends Controller
             ]);
         }
     }
-    
-    /**
-     * Redirige vers une URL
-     * 
-     * @param string $url URL de destination
-     */
-    private function redirectTo(string $url): void
-    {
-        // Préfixer l'URL avec le sous-répertoire si ce n'est pas déjà le cas
-        if (strpos($url, '/coud_bouletplate') !== 0 && $url !== '/') {
-            $url = '/coud_bouletplate' . $url;
-        } else if ($url === '/') {
-            $url = '/coud_bouletplate/';
-        }
-        
-        header('Location: ' . $url);
-        exit;
-    }
 }

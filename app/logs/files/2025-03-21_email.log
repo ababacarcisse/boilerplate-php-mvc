@@ -1,0 +1,24 @@
+[2025-03-21 02:26:25] Demande de réinitialisation reçue
+Détails: Email: ababacarcisse18@gmail.com, Matricule: MAT2025001
+--------------------------------------------------------------------------------
+[2025-03-21 02:26:25] Utilisateur trouvé pour la réinitialisation
+Détails: ID: 1, Email: ababacarcisse18@gmail.com, Matricule: MAT2025001
+--------------------------------------------------------------------------------
+[2025-03-21 02:26:25] Token de réinitialisation généré
+Détails: Selector: 0eba4f7283b86f02, URL: http://localhost/COUD_BOULETPLATE/reset-password/reset/0eba4f7283b86f02.3fbac53c6f951110dfa90cbfc474e312ccdaa52859ad013eb878b4819ac760b2, Expiration: 2025-03-21 03:26:25
+--------------------------------------------------------------------------------
+[2025-03-21 02:26:26] Échec de l'envoi d'email de réinitialisation
+Détails: Email: ababacarcisse18@gmail.com, Erreur: SMTP Error: Could not authenticate.
+--------------------------------------------------------------------------------
+[2025-03-21 02:27:43] Demande de réinitialisation reçue
+Détails: Email: ababacarcisse18@gmail.com, Matricule: MAT2025001
+--------------------------------------------------------------------------------
+[2025-03-21 02:27:43] Utilisateur trouvé pour la réinitialisation
+Détails: ID: 1, Email: ababacarcisse18@gmail.com, Matricule: MAT2025001
+--------------------------------------------------------------------------------
+[2025-03-21 02:27:44] Token de réinitialisation généré
+Détails: Selector: a0877538c5033bbe, URL: http://localhost/gestion-pharmacie/reset-password/reset/a0877538c5033bbe.422cdbda04608fdf381e2448170c3a6f530e53284e366f13e7663c75934dcedc, Expiration: 2025-03-21 03:27:43
+--------------------------------------------------------------------------------
+[2025-03-21 02:27:45] Email de réinitialisation envoyé avec succès
+Détails: Email: ababacarcisse18@gmail.com, URL: http://localhost/gestion-pharmacie/reset-password/reset/a0877538c5033bbe.422cdbda04608fdf381e2448170c3a6f530e53284e366f13e7663c75934dcedc
+--------------------------------------------------------------------------------

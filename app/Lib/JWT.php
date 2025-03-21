@@ -20,9 +20,8 @@ class JWT
             return;
         }
         
-        // Chargement de la clé secrète depuis un fichier externe sécurisé
-        // ou une variable d'environnement
-        self::$secretKey = $_ENV['JWT_SECRET'] ?? 'coud_secret_key_'.bin2hex(random_bytes(16));
+        // Utiliser une clé secrète fixe pour le développement
+        self::$secretKey = 'coud_secret_key_development';
         
         // En production, utiliser getenv() ou fichier de configuration externe
         // self::$secretKey = getenv('JWT_SECRET');

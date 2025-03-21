@@ -26,6 +26,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/utilisateurs">Utilisateurs</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>/login/logout">Déconnexion</a>
+                </li>
             </ul>
         </div>
     </div>
