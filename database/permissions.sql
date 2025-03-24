@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS user_types (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- Insertion des types de base
-INSERT INTO user_types (type_code, description) VALUES
+-- Insertion des types de base (en ignorant les doublons)
+INSERT IGNORE INTO user_types (type_code, description) VALUES
 ('pharmacie', 'Utilisateur de la pharmacie'),
 ('magasin', 'Utilisateur du magasin');
 
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS permissions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- Insertion des permissions de base
-INSERT INTO permissions (permission_code, description) VALUES
+-- Insertion des permissions de base (en ignorant les doublons)
+INSERT IGNORE INTO permissions (permission_code, description) VALUES
 ('dashboard', 'Accès au tableau de bord'),
 ('entries', 'Gestion des entrées de stock'),
 ('outputs', 'Gestion des sorties de stock'),
@@ -34,30 +34,41 @@ CREATE TABLE IF NOT EXISTS user_permissions (
     user_id INT NOT NULL,
     permission_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES USERS(id) ON DELETE CASCADE,
     FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
     UNIQUE KEY unique_user_permission (user_id, permission_id)
 ) ENGINE=InnoDB;
 
--- Ajout de la colonne type à la table users
-ALTER TABLE users 
-ADD COLUMN type VARCHAR(50) DEFAULT 'magasin' AFTER role,
-ADD CONSTRAINT fk_user_type FOREIGN KEY (type) REFERENCES user_types(type_code);
+-- Suppression de la contrainte existante si elle existe
+SET @constraint_name = 'fk_user_type';
+SET @sql = CONCAT('ALTER TABLE USERS DROP FOREIGN KEY IF EXISTS ', @constraint_name);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Modification de la colonne type pour correspondre exactement au type de type_code
+ALTER TABLE USERS 
+MODIFY COLUMN type VARCHAR(50) DEFAULT 'magasin' AFTER role;
+
+-- Ajout de la nouvelle contrainte
+ALTER TABLE USERS 
+ADD CONSTRAINT fk_user_type 
+FOREIGN KEY (type) REFERENCES user_types(type_code) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- Procédure pour assigner les permissions d'admin
 DELIMITER //
-CREATE PROCEDURE assign_admin_permissions(IN p_user_id INT)
+CREATE PROCEDURE IF NOT EXISTS assign_admin_permissions(IN p_user_id INT)
 BEGIN
-    INSERT INTO user_permissions (user_id, permission_id)
+    INSERT IGNORE INTO user_permissions (user_id, permission_id)
     SELECT p_user_id, id FROM permissions;
 END //
 DELIMITER ;
 
 -- Procédure pour assigner les permissions d'assistant
 DELIMITER //
-CREATE PROCEDURE assign_assistant_permissions(IN p_user_id INT)
+CREATE PROCEDURE IF NOT EXISTS assign_assistant_permissions(IN p_user_id INT)
 BEGIN
-    INSERT INTO user_permissions (user_id, permission_id)
+    INSERT IGNORE INTO user_permissions (user_id, permission_id)
     SELECT p_user_id, id FROM permissions 
     WHERE permission_code IN ('dashboard', 'entries', 'outputs', 'stats');
 END //
@@ -65,8 +76,9 @@ DELIMITER ;
 
 -- Trigger pour assigner automatiquement les permissions après l'insertion d'un utilisateur
 DELIMITER //
+DROP TRIGGER IF EXISTS after_user_insert //
 CREATE TRIGGER after_user_insert
-AFTER INSERT ON users
+AFTER INSERT ON USERS
 FOR EACH ROW
 BEGIN
     IF NEW.role = 'admin' THEN
@@ -77,20 +89,20 @@ BEGIN
 END //
 DELIMITER ;
 
--- Mise à jour des utilisateurs existants
-UPDATE users SET type = 'pharmacie' WHERE role = 'admin';
-UPDATE users SET type = 'magasin' WHERE role = 'assistant';
+-- Mise à jour des utilisateurs existants (en ignorant les erreurs)
+UPDATE IGNORE USERS SET type = 'pharmacie' WHERE role = 'admin';
+UPDATE IGNORE USERS SET type = 'magasin' WHERE role = 'assistant';
 
--- Assigner les permissions aux utilisateurs existants
-INSERT INTO user_permissions (user_id, permission_id)
+-- Assigner les permissions aux utilisateurs existants (en ignorant les doublons)
+INSERT IGNORE INTO user_permissions (user_id, permission_id)
 SELECT u.id, p.id
-FROM users u
+FROM USERS u
 CROSS JOIN permissions p
 WHERE u.role = 'admin';
 
-INSERT INTO user_permissions (user_id, permission_id)
+INSERT IGNORE INTO user_permissions (user_id, permission_id)
 SELECT u.id, p.id
-FROM users u
+FROM USERS u
 CROSS JOIN permissions p
 WHERE u.role = 'assistant'
 AND p.permission_code IN ('dashboard', 'entries', 'outputs', 'stats'); 

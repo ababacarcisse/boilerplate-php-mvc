@@ -48,7 +48,6 @@ L'inscription dans ce système est spécifique aux besoins du COUD et suit les �
 2. **Vérification du compte existant** : Le système vérifie ensuite si un compte utilisateur existe déjà avec le matricule fourni.
 
 3. **Gestion des cas spécifiques** :
-   - Si l'étudiant n'existe pas dans la base `etudiants` → Message d'erreur
    - Si un compte utilisateur existe déjà avec un mot de passe défini → Message d'erreur (compte déjà activé)
    - Si un compte utilisateur existe avec un mot de passe `null` → Activation du compte avec définition du mot de passe
    - Si aucun compte n'existe → Création d'un nouveau compte utilisateur

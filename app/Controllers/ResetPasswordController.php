@@ -85,23 +85,22 @@ class ResetPasswordController extends Controller
             'matricule' => $_POST['matricule'] ?? '',
         ];
         
-        // Valider les données
-        $validationResult = $this->validator->validate($data);
-        
-        // Si la validation échoue, afficher le formulaire avec les erreurs
-        if ($validationResult !== true) {
-            return $this->render('reset_password/index', [
-                'title' => 'Réinitialisation du mot de passe',
-                'errors' => $validationResult,
-                'old' => $data
-            ]);
-        }
-        
         try {
-            // Envoyer la demande de réinitialisation
+            // Valider les données
+            $validationResult = $this->validator->validate($data);
+            
+            if ($validationResult !== true) {
+                return $this->render('reset_password/index', [
+                    'title' => 'Réinitialisation du mot de passe',
+                    'errors' => $validationResult,
+                    'old' => $data
+                ]);
+            }
+            
+            // Appeler le service de réinitialisation
             $resetResult = $this->resetPasswordService->requestReset($data);
             
-            // Si la demande échoue, afficher les erreurs
+            // Si la requête a échoué
             if (!$resetResult['success']) {
                 $errorMessage = $resetResult['message'] ?? 'Erreur lors de la demande de réinitialisation';
                 
@@ -124,7 +123,7 @@ class ResetPasswordController extends Controller
             }
             
             // Définir un message de succès dans la session
-            $_SESSION['success_message'] = 'Un e-mail de réinitialisation a été envoyé à l\'adresse indiquée. Veuillez vérifier votre boîte de réception et suivre les instructions.';
+            $_SESSION['success_message'] = 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.';
             
             // Rediriger vers la même page pour afficher le message
             $this->redirectTo('/reset-password');

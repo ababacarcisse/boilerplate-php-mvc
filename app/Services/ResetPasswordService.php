@@ -45,6 +45,14 @@ class ResetPasswordService
             // Appeler l'API de demande de réinitialisation
             $result = $this->callRequestResetApi($userData);
             
+            // Si la réponse est vide mais le code est 200, considérer comme succès
+            if (empty($result) && isset($result['httpCode']) && $result['httpCode'] === 200) {
+                return [
+                    'success' => true,
+                    'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                ];
+            }
+            
             // Si la réponse est valide
             if (isset($result['success'])) {
                 return $result;

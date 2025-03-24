@@ -115,7 +115,12 @@ class LoginController extends Controller
                 ]);
             }
             
-            // Connexion réussie
+            // Connexion réussie - Stocker les informations dans la session
+            $_SESSION['user'] = $loginResult['user'];
+            $_SESSION['access_token'] = $loginResult['accessToken'];
+            $_SESSION['refresh_token'] = $loginResult['refreshToken'];
+            
+            // Message de succès
             $_SESSION['flash_message'] = [
                 'type' => 'success',
                 'message' => 'Connexion réussie! Redirection...'

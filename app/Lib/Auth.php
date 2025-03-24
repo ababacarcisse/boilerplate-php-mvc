@@ -23,7 +23,23 @@ class Auth
 
     private function initialize()
     {
-        // Vérifier si un token JWT existe
+        // Démarrer la session si elle n'est pas déjà démarrée
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // D'abord vérifier la session
+        if (isset($_SESSION['user']) && isset($_SESSION['access_token'])) {
+            $token = $_SESSION['access_token'];
+            $decoded = JWT::decode($token);
+            if ($decoded && isset($decoded->data)) {
+                $this->user = $_SESSION['user'];
+                $this->loadUserPermissions();
+                return;
+            }
+        }
+
+        // Sinon, vérifier l'en-tête Authorization
         $token = JWT::extractTokenFromHeader();
         if ($token) {
             $decoded = JWT::decode($token);
@@ -64,7 +80,12 @@ class Auth
 
     public function isAuthenticated(): bool
     {
-        return $this->user !== null;
+        // Vérifier si l'utilisateur est défini et si la session est active
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        return $this->user !== null && isset($_SESSION['user']);
     }
 
     public function getUser(): ?array
@@ -109,9 +130,14 @@ class Auth
 
     public function hasPermission(string $permission): bool
     {
-        // Vérifier d'abord si l'utilisateur a la permission de base
-        if (!in_array($permission, $this->permissions)) {
-            return false;
+        // Vérifier si l'utilisateur a la permission dans ses permissions stockées
+        if (isset($this->user['permissions']) && in_array($permission, $this->user['permissions'])) {
+            return true;
+        }
+
+        // Vérifier si l'utilisateur a la permission dans la base de données
+        if (in_array($permission, $this->permissions)) {
+            return true;
         }
 
         // Restrictions spécifiques basées sur le type
@@ -130,7 +156,7 @@ class Auth
                 return true;
             
             default:
-                return true;
+                return false;
         }
     }
 
@@ -185,6 +211,15 @@ class Auth
 
     private function redirectToLogin(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        // Nettoyer la session
+        unset($_SESSION['user']);
+        unset($_SESSION['access_token']);
+        unset($_SESSION['refresh_token']);
+        
         require_once dirname(__DIR__) . '/config.php';
         header('Location: ' . BASE_URL . '/login');
         exit;

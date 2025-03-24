@@ -188,11 +188,11 @@ class AuthController
     }
     
     /**
-     * Traite une demande de réinitialisation de mot de passe
+     * Traite la demande de réinitialisation de mot de passe
      */
     public function forgotPassword()
     {
-        // Vérifier que la méthode de requête est POST
+        // Vérifier la méthode
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
@@ -202,21 +202,13 @@ class AuthController
         // Récupérer les données
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // Vérifier l'email
-        if (!isset($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!isset($data['email'])) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Adresse email invalide']);
+            echo json_encode(['success' => false, 'message' => 'Email requis']);
             return;
         }
         
-        // Vérifier le matricule
-        if (!isset($data['matricule']) || empty($data['matricule'])) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Matricule invalide']);
-            return;
-        }
-        
-        // Créer une instance de ErrorHandler pour la journalisation
+        // Initialiser le gestionnaire d'erreurs
         $errorHandler = new \App\logs\ErrorHandler();
         
         try {
@@ -275,39 +267,49 @@ class AuthController
                                 "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
                             );
                         }
-                    } else {
-                        $errorHandler->logEmailError(
-                            "Échec de génération du token de réinitialisation",
-                            "Réponse: " . json_encode($resetResult)
-                        );
                     }
+                    
+                    // Toujours retourner un succès pour des raisons de sécurité
+                    http_response_code(200);
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                    ]);
+                    
                 } catch (\Exception $e) {
                     $errorHandler->logEmailError(
-                        "Exception lors de l'initialisation du service d'email",
+                        "Erreur lors de la génération du token",
                         "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
                     );
+                    
+                    // En cas d'erreur, toujours retourner un succès pour des raisons de sécurité
+                    http_response_code(200);
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                    ]);
                 }
             } else {
-                $errorHandler->logEmailError(
-                    "Utilisateur non trouvé pour la réinitialisation",
-                    "Email: {$data['email']}, Matricule: {$data['matricule']}"
-                );
+                // Même si l'utilisateur n'existe pas, retourner un succès pour des raisons de sécurité
+                http_response_code(200);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
+                ]);
             }
             
-            // Par mesure de sécurité, toujours retourner un succès
+        } catch (\Exception $e) {
+            $errorHandler->logEmailError(
+                "Erreur générale lors de la réinitialisation",
+                "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
+            );
+            
+            // En cas d'erreur, toujours retourner un succès pour des raisons de sécurité
+            http_response_code(200);
             echo json_encode([
                 'success' => true,
                 'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
             ]);
-            
-        } catch (\Exception $e) {
-            $errorHandler->logEmailError(
-                "Erreur lors de la demande de réinitialisation",
-                "Message: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString()
-            );
-            
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Erreur serveur lors de la demande de réinitialisation']);
         }
     }
     

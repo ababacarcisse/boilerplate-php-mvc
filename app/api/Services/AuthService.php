@@ -88,6 +88,9 @@ class AuthService
         // Enregistrer la tentative de connexion réussie
         $this->logLoginAttempt($matricule, true);
         
+        // Charger les permissions de l'utilisateur
+        $permissions = $this->loadUserPermissions($user['id']);
+        
         // Générer les tokens
         $accessToken = JWT::generate($user);
         $refreshToken = $this->generateSecureRefreshToken($user);
@@ -102,11 +105,34 @@ class AuthService
             'user' => [
                 'id' => $user['id'],
                 'matricule' => $user['matricule'],
-                'fullName' => $user['fullName'],
+                'nom' => $user['nom'],
+                'prenom' => $user['prenom'],
+                'fullName' => $user['nom'] . ' ' . $user['prenom'],
                 'email' => $user['email'],
-                'role' => $user['role']
+                'role' => $user['role'],
+                'type' => $user['type'],
+                'permissions' => $permissions
             ]
         ];
+    }
+
+    /**
+     * Charge les permissions d'un utilisateur
+     * 
+     * @param int $userId ID de l'utilisateur
+     * @return array Liste des permissions
+     */
+    private function loadUserPermissions($userId)
+    {
+        $stmt = $this->db->prepare("
+            SELECT p.permission_code 
+            FROM user_permissions up
+            JOIN permissions p ON up.permission_id = p.id
+            WHERE up.user_id = ?
+        ");
+        
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
 
     /**
@@ -117,104 +143,80 @@ class AuthService
      */
     public function register($userData)
     {
-        // Vérifier si l'étudiant existe dans la base de données ETUDIANTS
-        $exists = $this->checkIfStudentExists(
-            $userData['matricule'],
-            $userData['nom'],
-            $userData['prenom'],
-            $userData['date_naissance']
-        );
-        
-        if (!$exists) {
-            return [
-                'success' => false,
-                'message' => 'Cet étudiant n\'est pas reconnu dans notre système. Veuillez contacter l\'administration.'
-            ];
-        }
-        
-        // Vérifier si l'utilisateur existe déjà avec ce matricule
-        $existingUser = User::findByMatricule($userData['matricule']);
-        
-        if ($existingUser) {
-            // Si l'utilisateur existe mais n'a pas encore défini de mot de passe
-            if (empty($existingUser['password'])) {
-                // Mettre à jour l'utilisateur existant avec le nouveau mot de passe
-                $user = $this->activateExistingUser($existingUser['id'], $userData);
-                
-                if (!$user) {
-                    return [
-                        'success' => false,
-                        'message' => 'Erreur lors de la mise à jour du compte'
-                    ];
-                }
-                
-                // Générer les tokens
-                $accessToken = JWT::generate($user);
-                $refreshToken = $this->generateSecureRefreshToken($user);
-                
-                // Envoyer un email de bienvenue
-                $this->emailService->sendWelcomeEmail($user);
-                
-                return [
-                    'success' => true,
-                    'message' => 'Compte activé avec succès',
-                    'accessToken' => $accessToken,
-                    'refreshToken' => $refreshToken,
-                    'user' => [
-                        'id' => $user['id'],
-                        'matricule' => $user['matricule'],
-                        'fullName' => $user['fullName'],
-                        'email' => $user['email'],
-                        'role' => $user['role']
-                    ]
-                ];
-            } else {
-                // L'utilisateur existe déjà avec un mot de passe défini
+        try {
+            // Vérifier si l'utilisateur existe déjà avec ce matricule
+            $existingUser = User::findByMatricule($userData['matricule']);
+            
+            if ($existingUser) {
+                // Si l'utilisateur existe déjà avec un mot de passe défini
                 return [
                     'success' => false,
                     'message' => 'Un compte existe déjà avec ce matricule. Veuillez vous connecter.'
                 ];
             }
-        }
-        
-        // Valider le mot de passe
-        if (strlen($userData['password']) < 8) {
+            
+            // Valider le mot de passe
+            if (strlen($userData['password']) < 8) {
+                return [
+                    'success' => false,
+                    'message' => 'Le mot de passe doit contenir au moins 8 caractères'
+                ];
+            }
+
+            // Valider le type d'utilisateur
+            if (!isset($userData['type']) || !in_array($userData['type'], ['pharmacie', 'magasin'])) {
+                $userData['type'] = 'magasin'; // Valeur par défaut
+            }
+            
+            // Créer le nouvel utilisateur
+            $user = User::create([
+                'matricule' => $userData['matricule'],
+                'nom' => $userData['nom'],
+                'prenom' => $userData['prenom'],
+                'email' => $userData['email'],
+                'password' => $userData['password'],
+                'role' => $userData['role'] ?? 'assistant',
+                'type' => $userData['type']
+            ]);
+            
+            if (!$user) {
+                return [
+                    'success' => false,
+                    'message' => 'Erreur lors de la création du compte. Veuillez réessayer.'
+                ];
+            }
+            
+            // Envoyer un email de bienvenue
+            $this->emailService->sendWelcomeEmail($user);
+            
+            // Générer les tokens
+            $accessToken = JWT::generate($user);
+            $refreshToken = $this->generateSecureRefreshToken($user);
+            
+            return [
+                'success' => true,
+                'message' => 'Compte créé avec succès',
+                'accessToken' => $accessToken,
+                'refreshToken' => $refreshToken,
+                'user' => [
+                    'id' => $user['id'],
+                    'matricule' => $user['matricule'],
+                    'nom' => $user['nom'],
+                    'prenom' => $user['prenom'],
+                    'fullName' => $user['nom'] . ' ' . $user['prenom'],
+                    'email' => $user['email'],
+                    'role' => $user['role'],
+                    'type' => $user['type'],
+                    'permissions' => $this->loadUserPermissions($user['id'])
+                ]
+            ];
+        } catch (\Exception $e) {
+            error_log('Erreur lors de l\'inscription: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Le mot de passe doit contenir au moins 8 caractères'
+                'message' => 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.'
             ];
         }
-        
-        // Créer le nouvel utilisateur
-        $user = $this->createNewUser($userData);
-        
-        if (!$user) {
-            return [
-                'success' => false,
-                'message' => 'Erreur lors de la création du compte'
-            ];
-        }
-        
-        // Envoyer un email de bienvenue
-        $this->emailService->sendWelcomeEmail($user);
-        
-        // Générer les tokens
-        $accessToken = JWT::generate($user);
-        $refreshToken = $this->generateSecureRefreshToken($user);
-        
-        return [
-            'success' => true,
-            'message' => 'Compte créé avec succès',
-            'accessToken' => $accessToken,
-            'refreshToken' => $refreshToken,
-            'user' => [
-                'id' => $user['id'],
-                'matricule' => $user['matricule'],
-                'fullName' => $user['fullName'],
-                'email' => $user['email'],
-                'role' => $user['role']
-            ]
-        ];
     }
 
     /**
@@ -303,110 +305,6 @@ class AuthService
             'success' => true,
             'message' => 'Déconnexion réussie'
         ];
-    }
-
-    /**
-     * Vérifie si un étudiant existe dans la table ETUDIANTS
-     * 
-     * @param string $matricule Matricule de l'étudiant
-     * @param string $nom Nom de l'étudiant
-     * @param string $prenom Prénom de l'étudiant
-     * @param string $date_naissance Date de naissance au format YYYY-MM-DD
-     * @return bool True si l'étudiant existe, false sinon
-     */
-    private function checkIfStudentExists($matricule, $nom, $prenom, $date_naissance)
-    {
-        $stmt = $this->db->prepare("
-            SELECT * FROM ETUDIANTS 
-            WHERE matricule = :matricule 
-            AND nom = :nom 
-            AND prenom = :prenom 
-            AND date_naissance = :date_naissance
-        ");
-        
-        $stmt->execute([
-            'matricule' => $matricule,
-            'nom' => $nom,
-            'prenom' => $prenom,
-            'date_naissance' => $date_naissance
-        ]);
-        
-        return $stmt->fetch() ? true : false;
-    }
-
-    /**
-     * Crée un nouvel utilisateur
-     * 
-     * @param array $userData Données utilisateur
-     * @return array|bool Données utilisateur créé ou false si échec
-     */
-    private function createNewUser($userData)
-    {
-        // Hasher le mot de passe
-        $hashedPassword = password_hash($userData['password'], PASSWORD_DEFAULT);
-        
-        // Insérer le nouvel utilisateur
-        $stmt = $this->db->prepare("
-            INSERT INTO USERS (
-                matricule, nom, prenom, date_naissance, email, password, role, status, email_verified, created_at
-            ) VALUES (
-                :matricule, :nom, :prenom, :date_naissance, :email, :password, :role, 'active', :email_verified, NOW()
-            )
-        ");
-        
-        $result = $stmt->execute([
-            'matricule' => $userData['matricule'],
-            'nom' => $userData['nom'],
-            'prenom' => $userData['prenom'],
-            'date_naissance' => $userData['date_naissance'],
-            'email' => $userData['email'],
-            'password' => $hashedPassword,
-            'role' => $userData['role'] ?? 'etudiant',
-            'email_verified' => 0
-        ]);
-        
-        if (!$result) {
-            return false;
-        }
-        
-        // Récupérer l'utilisateur nouvellement créé
-        return User::findByMatricule($userData['matricule']);
-    }
-
-    /**
-     * Active un compte utilisateur existant
-     * 
-     * @param int $id ID de l'utilisateur
-     * @param array $userData Données utilisateur
-     * @return array|bool Données utilisateur mis à jour ou false si échec
-     */
-    private function activateExistingUser($id, $userData)
-    {
-        // Hasher le mot de passe
-        $hashedPassword = password_hash($userData['password'], PASSWORD_DEFAULT);
-        
-        // Mettre à jour l'utilisateur
-        $stmt = $this->db->prepare("
-            UPDATE USERS SET 
-            email = :email,
-            password = :password,
-            status = 'active',
-            updated_at = NOW()
-            WHERE id = :id
-        ");
-        
-        $result = $stmt->execute([
-            'email' => $userData['email'],
-            'password' => $hashedPassword,
-            'id' => $id
-        ]);
-        
-        if (!$result) {
-            return false;
-        }
-        
-        // Récupérer l'utilisateur mis à jour
-        return User::findById($id);
     }
 
     /**
@@ -692,9 +590,8 @@ class AuthService
             
             // Retourner un message d'erreur
             return [
-                'success' => false,
-                'message' => 'Une erreur est survenue lors de la génération du token de réinitialisation.',
-                'error' => $e->getMessage() // Ne pas inclure en production
+                'success' => true, // Toujours retourner true pour des raisons de sécurité
+                'message' => 'Si cette adresse email est associée à un compte, un email de réinitialisation a été envoyé.'
             ];
         }
     }
